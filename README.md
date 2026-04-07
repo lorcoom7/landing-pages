@@ -42,6 +42,6 @@ landing-pages/
 
 Have a project in mind or want a custom landing page built?
 
-**Contact:** [sheldonthecyberguy@gmail.com](mailto:sheldonthecyberguy@gmail.com)
+**Contact:** [sh31don@duck.com](mailto:sh31don@duck.com)
 
 Pages can be licensed individually or customized for your brand. Reach out with your industry and requirements.
