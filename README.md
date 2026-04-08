@@ -12,6 +12,7 @@ A curated collection of premium, handcrafted landing pages — ready to deploy f
 |---|------|----------|--------------|--------|
 | 1 | [HealthCore AI](./pages/healthcore-ai/) | Healthcare / AI SaaS | [🔗 View Live](https://lorcoom7.github.io/landing-pages/pages/healthcore-ai/) | ✅ Available |
 | 2 | [Tingaling Anatomy](./pages/tingaling-anatomy/) | Creative Digital Studio | [🔗 View Live](https://lorcoom7.github.io/landing-pages/pages/tingaling-anatomy/) | ✅ Available |
+| 3 | [Lumina Dental](./pages/lumina-dental/) | Dental Practice | [🔗 View Live](https://lorcoom7.github.io/landing-pages/pages/lumina-dental/) | ✅ Available |
 
 ---
 
