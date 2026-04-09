@@ -734,6 +734,75 @@
     #hero { padding: 0 20px; }
     #nav-links { display: none; }
   }
+
+  /* ============================================================
+     SHOWCASE — 3D Spinning Jordan 12
+  ============================================================ */
+  #showcase {
+    position: relative; z-index: 10;
+    width: 100%; min-height: 100vh;
+    background: #000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 100px 20px 60px;
+    opacity: 0; transition: opacity 0.8s ease;
+    overflow: hidden;
+  }
+  #showcase.show { opacity: 1; }
+  #showcase::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -55%);
+    pointer-events: none;
+  }
+  #showcase-tag {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 5px;
+    text-transform: uppercase; color: var(--accent); opacity: 0.8;
+    margin-bottom: 12px;
+  }
+  #shoe-canvas {
+    display: block;
+    width: 100%; max-width: 680px;
+    height: 420px;
+    cursor: grab;
+  }
+  #shoe-canvas:active { cursor: grabbing; }
+  #showcase-info {
+    text-align: center; margin-top: 24px; position: relative; z-index: 2;
+  }
+  #shoe-name {
+    font-family: var(--sans); font-size: clamp(20px, 3vw, 32px);
+    font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px;
+    color: #fff; margin-bottom: 6px;
+  }
+  #shoe-model {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 3px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+  }
+  #shoe-price {
+    font-family: var(--sans); font-size: 36px; font-weight: 900;
+    color: var(--accent); letter-spacing: -1px; margin-bottom: 20px;
+  }
+  #shoe-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 4px;
+    text-transform: uppercase; color: #000;
+    background: var(--accent); padding: 14px 32px;
+    text-decoration: none; transition: background 0.3s, color 0.3s;
+  }
+  #shoe-cta:hover { background: #fff; color: #000; }
+  #showcase-hint {
+    margin-top: 16px; font-size: 8px; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(255,255,255,0.18);
+  }
+  @media (max-width: 640px) {
+    #shoe-canvas { height: 300px; }
+    #shoe-price { font-size: 28px; }
+  }
 </style>
 </head>
 <body class="loading">
@@ -771,6 +840,22 @@
 <!-- ============================================================
      COMPONENT 4: HERO (ASCII art + headline)
 ============================================================ -->
+
+<!-- ============================================================
+     3D SNEAKER SHOWCASE — Jordan 12 Retro Barons
+============================================================ -->
+<section id="showcase">
+  <p id="showcase-tag">// Top Seller &nbsp;&#9679;&nbsp; SS26</p>
+  <canvas id="shoe-canvas"></canvas>
+  <div id="showcase-info">
+    <h2 id="shoe-name">Jordan 12 Retro Barons</h2>
+    <p id="shoe-model">CT8013-010 &nbsp;&middot;&nbsp; Men's</p>
+    <p id="shoe-price">$190.00</p>
+    <a href="#" id="shoe-cta">Shop Now &#x2192;</a>
+    <p id="showcase-hint">Drag to rotate</p>
+  </div>
+</section>
+
 <section id="hero">
   <div id="hero-ascii" aria-hidden="true"></div>
 
@@ -1241,5 +1326,385 @@
 
 })();
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var canvas = document.getElementById('shoe-canvas');
+  if (!canvas || !window.THREE) return;
+
+  var W = canvas.clientWidth  || 680;
+  var H = canvas.clientHeight || 420;
+
+  // ── RENDERER ──────────────────────────────────────────
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.3;
+
+  // ── SCENE & CAMERA ────────────────────────────────────
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
+  camera.position.set(0, 1.4, 9);
+  camera.lookAt(0, 0.4, 0);
+
+  // ── LIGHTS ────────────────────────────────────────────
+  scene.add(new THREE.AmbientLight(0x111122, 1.2));
+
+  var key = new THREE.DirectionalLight(0xffffff, 3.0);
+  key.position.set(6, 10, 6);
+  key.castShadow = true;
+  key.shadow.mapSize.width = 2048;
+  key.shadow.mapSize.height = 2048;
+  key.shadow.camera.near = 0.5;
+  key.shadow.camera.far = 30;
+  key.shadow.camera.left = -6;
+  key.shadow.camera.right = 6;
+  key.shadow.camera.top = 6;
+  key.shadow.camera.bottom = -6;
+  scene.add(key);
+
+  var fill = new THREE.DirectionalLight(0x3366ff, 0.6);
+  fill.position.set(-6, 3, -4);
+  scene.add(fill);
+
+  var rim = new THREE.DirectionalLight(0x00e5ff, 1.2);
+  rim.position.set(0, 4, -9);
+  scene.add(rim);
+
+  var bot = new THREE.DirectionalLight(0xffffff, 0.4);
+  bot.position.set(0, -5, 3);
+  scene.add(bot);
+
+  // ── SHADOW CATCHER ────────────────────────────────────
+  var ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(14, 14),
+    new THREE.ShadowMaterial({ opacity: 0.35 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -1.08;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Subtle reflection disc under shoe
+  var discMat = new THREE.MeshBasicMaterial({
+    color: 0x00e5ff, transparent: true, opacity: 0.06
+  });
+  var disc = new THREE.Mesh(new THREE.CircleGeometry(2.2, 48), discMat);
+  disc.rotation.x = -Math.PI / 2;
+  disc.position.y = -1.07;
+  scene.add(disc);
+
+  // ── MATERIALS ─────────────────────────────────────────
+  var mBlack = new THREE.MeshStandardMaterial({ color: 0x0c0c0c, roughness: 0.38, metalness: 0.08 });
+  var mBlackSoft = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.55, metalness: 0.04 });
+  var mSilver = new THREE.MeshStandardMaterial({ color: 0x8e8e8e, roughness: 0.22, metalness: 0.92 });
+  var mSilverDark = new THREE.MeshStandardMaterial({ color: 0x5a5a5a, roughness: 0.3, metalness: 0.85 });
+  var mWhite = new THREE.MeshStandardMaterial({ color: 0xeeeeec, roughness: 0.58, metalness: 0.0 });
+  var mIcy = new THREE.MeshStandardMaterial({ color: 0xbfd4e0, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.86 });
+  var mLace = new THREE.MeshStandardMaterial({ color: 0x0d0d0d, roughness: 0.75, metalness: 0.0 });
+  var mEyelet = new THREE.MeshStandardMaterial({ color: 0xb0b0b0, roughness: 0.18, metalness: 1.0 });
+
+  // ── SHOE GROUP ────────────────────────────────────────
+  var shoe = new THREE.Group();
+  scene.add(shoe);
+
+  function addMesh(geo, mat, px, py, pz, rx, ry, rz, castShadow) {
+    var m = new THREE.Mesh(geo, mat);
+    m.position.set(px || 0, py || 0, pz || 0);
+    if (rx) m.rotation.x = rx;
+    if (ry) m.rotation.y = ry;
+    if (rz) m.rotation.z = rz;
+    m.castShadow = castShadow !== false;
+    m.receiveShadow = true;
+    shoe.add(m);
+    return m;
+  }
+
+  // ─────────────────────────────────────────────────────
+  //  OUTSOLE — icy translucent rubber
+  // ─────────────────────────────────────────────────────
+  addMesh(new THREE.BoxGeometry(3.8, 0.13, 1.46), mIcy, 0, 0, 0);
+
+  // Toe cap outsole
+  var toeOuter = new THREE.CylinderGeometry(0.73, 0.73, 0.13, 24, 1, false, 0, Math.PI);
+  var tcMesh = new THREE.Mesh(toeOuter, mIcy);
+  tcMesh.rotation.y = -Math.PI / 2;
+  tcMesh.position.set(1.9, 0, 0);
+  tcMesh.castShadow = true;
+  shoe.add(tcMesh);
+
+  // Heel cap outsole
+  var heelOuter = new THREE.CylinderGeometry(0.73, 0.73, 0.13, 24, 1, false, Math.PI, Math.PI);
+  var hcMesh = new THREE.Mesh(heelOuter, mIcy);
+  hcMesh.rotation.y = -Math.PI / 2;
+  hcMesh.position.set(-1.9, 0, 0);
+  hcMesh.castShadow = true;
+  shoe.add(hcMesh);
+
+  // Herringbone tread bars
+  for (var t = 0; t < 16; t++) {
+    var tg = new THREE.BoxGeometry(0.1, 0.15, 1.22);
+    var tm = new THREE.Mesh(tg, mBlack);
+    var ang = (t % 2 === 0) ? 0.32 : -0.32;
+    tm.rotation.y = ang;
+    tm.position.set(-1.9 + t * 0.255, 0.0, 0);
+    tm.castShadow = false;
+    shoe.add(tm);
+  }
+
+  // ─────────────────────────────────────────────────────
+  //  MIDSOLE — silver metallic
+  // ─────────────────────────────────────────────────────
+  addMesh(new THREE.BoxGeometry(3.62, 0.26, 1.34), mSilver, 0, 0.195, 0);
+
+  // Toe midsole cap
+  var tmCap = new THREE.CylinderGeometry(0.67, 0.67, 0.26, 24, 1, false, 0, Math.PI);
+  var tmMesh = new THREE.Mesh(tmCap, mSilver);
+  tmMesh.rotation.y = -Math.PI / 2;
+  tmMesh.position.set(1.81, 0.195, 0);
+  shoe.add(tmMesh);
+
+  // Heel midsole cap
+  var hmCap = new THREE.CylinderGeometry(0.67, 0.67, 0.26, 24, 1, false, Math.PI, Math.PI);
+  var hmMesh = new THREE.Mesh(hmCap, mSilver);
+  hmMesh.rotation.y = -Math.PI / 2;
+  hmMesh.position.set(-1.81, 0.195, 0);
+  shoe.add(hmMesh);
+
+  // Silver midsole pinstripe line
+  addMesh(new THREE.BoxGeometry(3.65, 0.04, 1.35), mSilverDark, 0, 0.322, 0);
+
+  // ─────────────────────────────────────────────────────
+  //  UPPER — ExtrudeGeometry from Jordan 12 side profile
+  // ─────────────────────────────────────────────────────
+  var prof = new THREE.Shape();
+  prof.moveTo(-1.82, 0.33);
+  prof.lineTo(1.52, 0.33);
+  prof.quadraticCurveTo(2.18, 0.33, 2.18, 0.88);
+  prof.quadraticCurveTo(2.14, 1.28, 1.68, 1.32);
+  prof.quadraticCurveTo(1.1,  1.37, 0.58, 1.34);
+  prof.quadraticCurveTo(0.05, 1.31,-0.3,  1.44);
+  prof.quadraticCurveTo(-0.65,1.58,-0.88, 1.76);
+  prof.quadraticCurveTo(-1.08,1.94,-1.32, 1.84);
+  prof.quadraticCurveTo(-1.62,1.78,-1.88, 1.68);
+  prof.quadraticCurveTo(-2.08,1.52,-2.08, 1.18);
+  prof.quadraticCurveTo(-2.08,0.62,-1.82, 0.33);
+
+  var extOpts = {
+    depth: 1.32,
+    bevelEnabled: true,
+    bevelThickness: 0.055,
+    bevelSize: 0.055,
+    bevelSegments: 4,
+    steps: 2
+  };
+  var upperGeo = new THREE.ExtrudeGeometry(prof, extOpts);
+  var upperMesh = new THREE.Mesh(upperGeo, mBlack);
+  upperMesh.position.set(0, 0, -0.66);
+  upperMesh.castShadow = true;
+  upperMesh.receiveShadow = true;
+  shoe.add(upperMesh);
+
+  // ─────────────────────────────────────────────────────
+  //  SIDE DETAIL PANEL (lateral swoosh area)
+  // ─────────────────────────────────────────────────────
+  var sidePanel = new THREE.Shape();
+  sidePanel.moveTo(-0.5, 0.58);
+  sidePanel.lineTo(1.4, 0.58);
+  sidePanel.quadraticCurveTo(1.75, 0.6, 1.75, 0.9);
+  sidePanel.quadraticCurveTo(1.72, 1.18, 1.3, 1.2);
+  sidePanel.lineTo(-0.5, 1.18);
+  sidePanel.lineTo(-0.5, 0.58);
+
+  var spOpts = { depth: 0.05, bevelEnabled: false };
+  var spGeo = new THREE.ExtrudeGeometry(sidePanel, spOpts);
+  var spMesh = new THREE.Mesh(spGeo, mSilverDark);
+  spMesh.position.set(0, 0, 0.715);
+  spMesh.castShadow = false;
+  shoe.add(spMesh);
+
+  // same panel on medial side (flipped)
+  var spMesh2 = new THREE.Mesh(spGeo, mSilverDark);
+  spMesh2.position.set(0, 0, -0.715);
+  spMesh2.scale.z = -1;
+  shoe.add(spMesh2);
+
+  // ─────────────────────────────────────────────────────
+  //  TONGUE
+  // ─────────────────────────────────────────────────────
+  var tongShape = new THREE.Shape();
+  tongShape.moveTo(-0.38, 1.3);
+  tongShape.quadraticCurveTo(0, 1.27, 0.38, 1.3);
+  tongShape.lineTo(0.32, 2.08);
+  tongShape.quadraticCurveTo(0, 2.18, -0.32, 2.08);
+  tongShape.lineTo(-0.38, 1.3);
+
+  var tongGeo = new THREE.ExtrudeGeometry(tongShape, { depth: 1.08, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2 });
+  var tongMesh = new THREE.Mesh(tongGeo, mBlackSoft);
+  tongMesh.position.set(0, 0, -0.54);
+  tongMesh.castShadow = true;
+  shoe.add(tongMesh);
+
+  // Tongue label (silver rectangle)
+  addMesh(new THREE.BoxGeometry(0.32, 0.18, 0.01), mSilver, 0, 1.72, 0.54);
+
+  // ─────────────────────────────────────────────────────
+  //  LACES
+  // ─────────────────────────────────────────────────────
+  for (var l = 0; l < 7; l++) {
+    var lx = 0.82 - l * 0.22;
+    var ly = 1.36 + l * 0.025;
+    var lGeo = new THREE.CylinderGeometry(0.033, 0.033, 0.72, 8);
+    var lMesh = new THREE.Mesh(lGeo, mLace);
+    lMesh.rotation.z = Math.PI / 2;
+    lMesh.position.set(lx, ly, 0);
+    shoe.add(lMesh);
+  }
+
+  // Lace aglets (tips)
+  [-0.36, 0.36].forEach(function(sz) {
+    var ag = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.035, 0.035, 0.12, 8),
+      mSilver
+    );
+    ag.rotation.x = Math.PI / 2;
+    ag.position.set(0.82, 1.36, sz);
+    shoe.add(ag);
+  });
+
+  // ─────────────────────────────────────────────────────
+  //  EYELETS (silver rings)
+  // ─────────────────────────────────────────────────────
+  for (var e = 0; e < 7; e++) {
+    var ex = 0.82 - e * 0.22;
+    var ey = 1.36 + e * 0.025;
+    [-0.36, 0.36].forEach(function(ez) {
+      var eyGeo = new THREE.TorusGeometry(0.055, 0.018, 8, 12);
+      var eyMesh = new THREE.Mesh(eyGeo, mEyelet);
+      eyMesh.rotation.x = Math.PI / 2;
+      eyMesh.position.set(ex, ey, ez);
+      shoe.add(eyMesh);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────
+  //  HEEL COUNTER detail
+  // ─────────────────────────────────────────────────────
+  var heelPanel = new THREE.Shape();
+  heelPanel.moveTo(-2.0, 0.42);
+  heelPanel.quadraticCurveTo(-2.06, 0.9, -2.0, 1.3);
+  heelPanel.quadraticCurveTo(-1.92, 1.6, -1.7, 1.68);
+  heelPanel.lineTo(-1.7, 1.44);
+  heelPanel.quadraticCurveTo(-1.84, 1.38, -1.88, 1.12);
+  heelPanel.quadraticCurveTo(-1.94, 0.82, -1.88, 0.42);
+  heelPanel.lineTo(-2.0, 0.42);
+
+  var hpGeo = new THREE.ExtrudeGeometry(heelPanel, { depth: 1.32, bevelEnabled: false });
+  var hpMesh = new THREE.Mesh(hpGeo, mSilverDark);
+  hpMesh.position.set(0, 0, -0.66);
+  shoe.add(hpMesh);
+
+  // Heel pull tab
+  addMesh(new THREE.BoxGeometry(0.16, 0.32, 0.07), mSilver, -1.84, 1.88, 0);
+  addMesh(new THREE.BoxGeometry(0.1, 0.08, 0.09), mSilver, -1.84, 1.72, 0);
+
+  // ─────────────────────────────────────────────────────
+  //  ANKLE COLLAR PADDING (puffy ring)
+  // ─────────────────────────────────────────────────────
+  var collarPts = [];
+  var collarAngles = [
+    [-0.32, 1.86], [-0.1, 1.95], [0.15, 1.92], [0.3, 1.82],
+    [0.3, 1.72], [0.15, 1.65], [-0.1, 1.62], [-0.32, 1.68]
+  ];
+  collarAngles.forEach(function(pt) {
+    collarPts.push(new THREE.Vector2(pt[0], pt[1]));
+  });
+  var collarShape = new THREE.CatmullRomCurve3(
+    collarAngles.map(function(p) { return new THREE.Vector3(p[0], p[1], 0); }), true
+  );
+
+  // Simple collar padding as flattened torus-like rings at ankle
+  var collarGeo = new THREE.TorusGeometry(0.38, 0.1, 8, 24, Math.PI * 1.15);
+  var collarMesh = new THREE.Mesh(collarGeo, mBlackSoft);
+  collarMesh.position.set(-0.62, 1.78, 0);
+  collarMesh.rotation.y = -0.35;
+  collarMesh.rotation.z = -1.2;
+  shoe.add(collarMesh);
+
+  // ─────────────────────────────────────────────────────
+  //  JORDAN WINGS (simplified embossed area on toe side)
+  // ─────────────────────────────────────────────────────
+  var wingsGeo = new THREE.BoxGeometry(0.55, 0.18, 0.01);
+  addMesh(wingsGeo, mSilverDark, 1.1, 0.95, 0.76, 0, 0, 0);
+  addMesh(wingsGeo, mSilverDark, 1.1, 0.95, -0.77, 0, 0, 0);
+
+  // ─────────────────────────────────────────────────────
+  //  POSITION & SCALE whole shoe
+  // ─────────────────────────────────────────────────────
+  shoe.position.set(0, -0.12, 0);
+  shoe.scale.set(1.05, 1.05, 1.05);
+
+  // ── RESIZE HANDLER ────────────────────────────────────
+  function onResize() {
+    var w = canvas.clientWidth;
+    var h = canvas.clientHeight;
+    if (w === 0 || h === 0) return;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', onResize);
+
+  // ── DRAG TO ROTATE ────────────────────────────────────
+  var isDragging = false;
+  var prevX = 0;
+  var manualY = 0;
+  var autoRotate = true;
+
+  canvas.addEventListener('mousedown', function(e) { isDragging = true; prevX = e.clientX; autoRotate = false; });
+  window.addEventListener('mouseup',   function()  { isDragging = false; setTimeout(function(){ autoRotate = true; }, 2000); });
+  window.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    var dx = e.clientX - prevX;
+    manualY += dx * 0.012;
+    prevX = e.clientX;
+  });
+
+  canvas.addEventListener('touchstart', function(e) { isDragging = true; prevX = e.touches[0].clientX; autoRotate = false; }, { passive: true });
+  window.addEventListener('touchend',   function()  { isDragging = false; setTimeout(function(){ autoRotate = true; }, 2000); });
+  window.addEventListener('touchmove',  function(e) {
+    if (!isDragging) return;
+    var dx = e.touches[0].clientX - prevX;
+    manualY += dx * 0.012;
+    prevX = e.touches[0].clientX;
+  }, { passive: true });
+
+  // ── ANIMATE ───────────────────────────────────────────
+  var clock = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    clock += 0.008;
+    if (autoRotate) {
+      shoe.rotation.y = clock;
+    } else {
+      shoe.rotation.y = manualY;
+    }
+    // Gentle bob
+    shoe.position.y = -0.12 + Math.sin(clock * 0.8) * 0.04;
+    // Disc pulse
+    disc.material.opacity = 0.04 + Math.sin(clock * 0.8) * 0.025;
+    renderer.render(scene, camera);
+  }
+  animate();
+
+})();
+</script>
+
 </body>
 </html>
