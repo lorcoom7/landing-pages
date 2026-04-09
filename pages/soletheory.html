@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOLE THEORY · Premium Sneaker Experiences</title>
+<style>
+  /* ============================================================
+     SOLE THEORY — Inspired by Active Theory's dark cinematic aesthetic
+     Edge-compatible version (no cursor:none, all JS in try/catch)
+
+     COMPONENTS:
+     1.  Loading Screen
+     2.  Navigation Bar
+     3.  Canvas Background (animated particles)
+     4.  ASCII Art Hero
+     5.  Category Navigation (-> arrows)
+     6.  AI Search Bar
+     7.  Product Drop Cards
+     8.  Brand Statement Section
+     9.  Drop Ticker (marquee)
+     10. Footer
+     11. Cookie Banner
+     12. Audio Toggle
+  ============================================================ */
+
+  :root {
+    --bg: #000000;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.38);
+    --mono: 'Courier New', Courier, monospace;
+    --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    overflow-x: hidden;
+  }
+
+  /* While loader is active, lock scroll */
+  body.loading { overflow: hidden; height: 100vh; }
+
+  /* ============================================================
+     1. LOADING SCREEN
+  ============================================================ */
+  #loader {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: opacity 0.9s ease;
+  }
+  #loader.fade-out { opacity: 0; pointer-events: none; }
+
+  #loader-ring {
+    font-family: var(--mono);
+    font-size: 9px;
+    line-height: 1.25;
+    color: rgba(0,229,255,0.2);
+    letter-spacing: 2px;
+    white-space: pre;
+    user-select: none;
+    position: relative;
+  }
+  #loader-ring.lit { color: rgba(0,229,255,0.55); }
+
+  #loader-pct {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  #loader-label {
+    margin-top: 28px;
+    font-family: var(--sans);
+    font-size: 9px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+  }
+
+  /* ============================================================
+     3. CANVAS BACKGROUND
+  ============================================================ */
+  #canvas-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    pointer-events: none;
+  }
+  #canvas-bg.show { opacity: 1; }
+
+  /* ============================================================
+     2. NAVIGATION
+  ============================================================ */
+  #nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 36px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  #nav.show { opacity: 1; transform: translateY(0); }
+
+  #nav-logo {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #fff;
+    text-decoration: none;
+  }
+  #nav-logo span { color: var(--accent); }
+
+  #nav-links {
+    display: flex;
+    gap: 30px;
+    list-style: none;
+  }
+  #nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: color 0.25s;
+    position: relative;
+  }
+  #nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  #nav-links a:hover { color: #fff; }
+  #nav-links a:hover::after { transform: scaleX(1); }
+
+  #btn-audio {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 7px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: border-color 0.25s, color 0.25s;
+  }
+  #btn-audio:hover,
+  #btn-audio.on { border-color: var(--accent); color: var(--accent); }
+
+  /* ============================================================
+     4. HERO SECTION (ASCII art + title)
+  ============================================================ */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 36px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  #hero.show { opacity: 1; }
+
+  #hero-ascii {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    line-height: 1.3;
+    letter-spacing: 2px;
+    white-space: pre;
+    color: rgba(0,229,255,0.07);
+    user-select: none;
+    pointer-events: none;
+    overflow: hidden;
+    animation: ascii-pulse 5s ease-in-out infinite;
+  }
+  @keyframes ascii-pulse {
+    0%, 100% { opacity: 0.7; }
+    50%       { opacity: 1; }
+  }
+
+  #hero-content { position: relative; z-index: 2; max-width: 700px; }
+
+  #hero-eyebrow {
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 22px;
+    opacity: 0.85;
+  }
+
+  #hero-title {
+    font-family: var(--sans);
+    font-size: clamp(54px, 9vw, 120px);
+    font-weight: 900;
+    line-height: 0.88;
+    text-transform: uppercase;
+    letter-spacing: -3px;
+    overflow: hidden;
+  }
+  .h-line {
+    display: block;
+    transform: translateY(110%);
+    animation: slide-up 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  .h-line:nth-child(1) { animation-delay: 1.6s; }
+  .h-line:nth-child(2) { animation-delay: 1.78s; color: var(--accent); }
+  .h-line:nth-child(3) { animation-delay: 1.96s; }
+
+  @keyframes slide-up { to { transform: translateY(0); } }
+
+  #hero-sub {
+    margin-top: 30px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    max-width: 380px;
+    line-height: 2;
+    opacity: 0;
+    animation: fade-in 0.8s ease 2.4s forwards;
+  }
+  @keyframes fade-in { to { opacity: 1; } }
+
+  #hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 36px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid rgba(0,229,255,0.35);
+    padding: 12px 28px;
+    opacity: 0;
+    animation: fade-in 0.8s ease 2.7s forwards;
+    transition: background 0.3s, color 0.3s;
+  }
+  #hero-cta:hover { background: var(--accent); color: #000; }
+
+  /* Scroll hint */
+  #scroll-hint {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 8px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+    animation: fade-in 1s ease 3s forwards;
+    z-index: 2;
+  }
+  .scroll-bar {
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: scroll-bar-anim 1.6s ease-in-out infinite;
+  }
+  @keyframes scroll-bar-anim {
+    0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
+    49%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+    50%  { transform-origin: bottom; opacity: 1; }
+    100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  }
+
+  /* ============================================================
+     5. CATEGORY NAVIGATION (right side, -> arrows)
+  ============================================================ */
+  #cat-nav {
+    position: fixed;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  #cat-nav.show { opacity: 1; }
+
+  .cat-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: lowercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s, gap 0.25s;
+  }
+  .cat-link .arr { color: var(--accent); display: inline-block; transition: transform 0.2s; }
+  .cat-link:hover { color: #fff; gap: 10px; }
+  .cat-link:hover .arr { transform: translateX(3px); }
+  .cat-link.active { color: #fff; }
+
+  /* ============================================================
+     6. AI SEARCH BAR
+  ============================================================ */
+  #search-box {
+    position: fixed;
+    bottom: 52px;
+    left: 36px;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  #search-box.show { opacity: 1; }
+
+  #search-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  #search-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    width: 300px;
+    transition: border-color 0.25s;
+  }
+  #search-row:focus-within { border-color: var(--accent); }
+  #search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 10px 0;
+    caret-color: var(--accent);
+  }
+  #search-input::placeholder { color: rgba(255,255,255,0.2); }
+  #search-go {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 0 0 10px;
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+  #search-go:hover { transform: translateX(3px); }
+
+  /* ============================================================
+     9. DROP TICKER
+  ============================================================ */
+  #ticker {
+    position: relative;
+    z-index: 10;
+    background: var(--accent);
+    overflow: hidden;
+    height: 38px;
+    display: flex;
+    align-items: center;
+  }
+  #ticker-track {
+    display: flex;
+    white-space: nowrap;
+    animation: ticker-move 28s linear infinite;
+  }
+  .t-item {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #000;
+    padding: 0 28px;
+  }
+  .t-dot { color: rgba(0,0,0,0.4); padding: 0 4px; }
+  @keyframes ticker-move { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* ============================================================
+     7. PRODUCT CARDS
+  ============================================================ */
+  #products {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: #000;
+  }
+
+  .p-card {
+    position: relative;
+    aspect-ratio: 3/4;
+    background: #080808;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .p-card.reveal { opacity: 1; transform: translateY(0); }
+
+  .p-visual {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(140deg, #0a0a0a 0%, #111 100%);
+    transition: transform 0.65s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .p-visual::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 65%, rgba(0,229,255,0.05) 0%, transparent 70%);
+  }
+  .p-card:hover .p-visual { transform: scale(1.04); }
+
+  .p-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 55%);
+    opacity: 0.5;
+    transition: opacity 0.4s;
+  }
+  .p-card:hover .p-overlay { opacity: 1; }
+
+  .p-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 26px;
+    transform: translateY(10px);
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .p-card:hover .p-info { transform: translateY(0); }
+
+  .p-tag {
+    font-size: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 7px;
+  }
+  .p-name {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+  }
+  .p-price {
+    margin-top: 8px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .p-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.25);
+    padding-bottom: 2px;
+    transition: border-color 0.2s, color 0.2s, gap 0.2s;
+  }
+  .p-btn:hover { border-color: var(--accent); color: var(--accent); gap: 14px; }
+
+  /* ============================================================
+     8. BRAND STATEMENT
+  ============================================================ */
+  #statement {
+    position: relative;
+    z-index: 10;
+    min-height: 65vh;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 80px 36px;
+    overflow: hidden;
+  }
+  #statement::before {
+    content: '';
+    position: absolute;
+    width: 560px; height: 560px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,229,255,0.07);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    animation: ring-pulse 4s ease-in-out infinite;
+  }
+  #statement::after {
+    content: '';
+    position: absolute;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,229,255,0.05);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    animation: ring-pulse 4s ease-in-out infinite 1.2s;
+  }
+  @keyframes ring-pulse {
+    0%, 100% { transform: translate(-50%,-50%) scale(1);   opacity: 0.5; }
+    50%       { transform: translate(-50%,-50%) scale(1.06); opacity: 1; }
+  }
+  #stmt-tag {
+    font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
+    color: rgba(0,229,255,0.55); margin-bottom: 22px; position: relative; z-index: 2;
+  }
+  #stmt-title {
+    font-family: var(--sans);
+    font-size: clamp(30px, 5.5vw, 68px);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 1;
+    position: relative; z-index: 2;
+    max-width: 920px;
+  }
+  #stmt-title em { font-style: normal; color: var(--accent); }
+  #stmt-sub {
+    margin-top: 20px;
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--muted); position: relative; z-index: 2;
+  }
+  #stmt-cta {
+    margin-top: 42px; position: relative; z-index: 2;
+    background: none;
+    border: 1px solid rgba(0,229,255,0.4);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    padding: 14px 34px; cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    text-decoration: none; display: inline-block;
+  }
+  #stmt-cta:hover { background: var(--accent); color: #000; }
+
+  /* ============================================================
+     10. FOOTER
+  ============================================================ */
+  #footer {
+    position: relative; z-index: 10;
+    background: #000;
+    padding: 64px 36px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  #footer-top {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-bottom: 56px;
+  }
+  #footer-logo {
+    font-family: var(--sans);
+    font-size: 30px; font-weight: 900;
+    letter-spacing: 4px; text-transform: uppercase;
+  }
+  #footer-logo span { color: var(--accent); }
+  #footer-tagline {
+    margin-top: 12px; font-size: 9px; letter-spacing: 2px;
+    color: rgba(255,255,255,0.2); line-height: 2;
+  }
+  .f-col h4 {
+    font-size: 8px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 16px;
+  }
+  .f-col ul { list-style: none; }
+  .f-col li { margin-bottom: 10px; }
+  .f-col a {
+    font-size: 11px; letter-spacing: 1px;
+    color: rgba(255,255,255,0.45); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .f-col a:hover { color: #fff; }
+  #footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 22px;
+    display: flex; justify-content: space-between;
+    font-size: 9px; letter-spacing: 2px;
+    color: rgba(255,255,255,0.2); text-transform: uppercase;
+    flex-wrap: wrap; gap: 10px;
+  }
+
+  /* ============================================================
+     11. COOKIE BANNER
+  ============================================================ */
+  #cookie {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 800;
+    background: rgba(0,0,0,0.96);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 9px; letter-spacing: 1.5px;
+    color: var(--muted);
+    transform: translateY(100%);
+    transition: transform 0.5s ease;
+    flex-wrap: wrap;
+  }
+  #cookie.show { transform: translateY(0); }
+  .ck-btns { display: flex; gap: 10px; flex-shrink: 0; }
+  .ck-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.5);
+    font-family: var(--mono);
+    font-size: 8px; letter-spacing: 2px;
+    padding: 7px 16px; cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .ck-btn.accept { border-color: var(--accent); color: var(--accent); }
+  .ck-btn:hover { background: rgba(255,255,255,0.06); }
+  .ck-btn.accept:hover { background: var(--accent); color: #000; }
+  .ck-link { color: var(--accent); text-decoration: none; }
+
+  /* ============================================================
+     GLITCH EFFECT (title only)
+  ============================================================ */
+  .glitch { position: relative; }
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    font-family: inherit; font-size: inherit;
+    font-weight: inherit; line-height: inherit;
+    letter-spacing: inherit;
+  }
+  .glitch::before {
+    color: #0ff;
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+    transform: translate(-3px, 0);
+    animation: glitch-a 4s infinite;
+  }
+  .glitch::after {
+    color: #f0f;
+    clip-path: polygon(0 58%, 100% 58%, 100% 100%, 0 100%);
+    transform: translate(3px, 0);
+    animation: glitch-b 4s infinite;
+  }
+  @keyframes glitch-a {
+    0%,89%,100% { opacity:0; transform:translate(-3px,0); }
+    91%          { opacity:.7; transform:translate(-5px,0); }
+    93%          { opacity:0; }
+    95%          { opacity:.5; transform:translate(3px,0); }
+  }
+  @keyframes glitch-b {
+    0%,87%,100% { opacity:0; transform:translate(3px,0); }
+    89%          { opacity:.7; transform:translate(5px,0); }
+    91%          { opacity:0; }
+    93%          { opacity:.5; transform:translate(-3px,0); }
+  }
+
+  /* ============================================================
+     RESPONSIVE
+  ============================================================ */
+  @media (max-width: 960px) {
+    #products { grid-template-columns: repeat(2, 1fr); }
+    #cat-nav { display: none; }
+  }
+  @media (max-width: 640px) {
+    #products { grid-template-columns: 1fr; }
+    #footer-top { flex-direction: column; }
+    #search-box { left: 16px; right: 16px; bottom: 56px; }
+    #search-row { width: 100%; }
+    #nav { padding: 16px 20px; }
+    #hero { padding: 0 20px; }
+    #nav-links { display: none; }
+  }
+</style>
+</head>
+<body class="loading">
+
+<!-- ============================================================
+     COMPONENT 1: LOADING SCREEN
+============================================================ -->
+<div id="loader">
+  <div style="position:relative; display:inline-block;">
+    <div id="loader-ring"></div>
+    <div id="loader-pct">/00</div>
+  </div>
+  <div id="loader-label">Initializing Sole Theory</div>
+</div>
+
+<!-- ============================================================
+     COMPONENT 3: CANVAS BACKGROUND
+============================================================ -->
+<canvas id="canvas-bg"></canvas>
+
+<!-- ============================================================
+     COMPONENT 2: NAVIGATION
+============================================================ -->
+<nav id="nav">
+  <a id="nav-logo" href="#">SOLE<span>.</span>THEORY</a>
+  <ul id="nav-links">
+    <li><a href="#products">Shop</a></li>
+    <li><a href="#statement">Drops</a></li>
+    <li><a href="#footer">About</a></li>
+    <li><a href="#footer">Contact</a></li>
+  </ul>
+  <button id="btn-audio">&#9654; Audio</button>
+</nav>
+
+<!-- ============================================================
+     COMPONENT 4: HERO (ASCII art + headline)
+============================================================ -->
+<section id="hero">
+  <div id="hero-ascii" aria-hidden="true"></div>
+
+  <div id="hero-content">
+    <p id="hero-eyebrow">// SS26 Collection &mdash; Now Live</p>
+    <h1 id="hero-title" class="glitch" data-text="SOLE THEORY">
+      <span class="h-line">SOLE</span>
+      <span class="h-line">THE</span>
+      <span class="h-line">ORY</span>
+    </h1>
+    <p id="hero-sub">
+      Premium sneaker experiences crafted for those who move differently.<br>
+      Every drop. Every detail. Every step.
+    </p>
+    <a href="#products" id="hero-cta">Explore Collection &nbsp;&#x2192;</a>
+  </div>
+
+  <div id="scroll-hint" aria-hidden="true">
+    <span>Scroll</span>
+    <div class="scroll-bar"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     COMPONENT 5: CATEGORY NAVIGATION (-> arrows)
+============================================================ -->
+<nav id="cat-nav" aria-label="Sneaker categories">
+  <a href="#" class="cat-link active"><span class="arr">-&gt;</span> running</a>
+  <a href="#" class="cat-link"><span class="arr">-&gt;</span> basketball</a>
+  <a href="#" class="cat-link"><span class="arr">-&gt;</span> lifestyle</a>
+  <a href="#" class="cat-link"><span class="arr">-&gt;</span> limited drops</a>
+  <a href="#" class="cat-link"><span class="arr">-&gt;</span> collabs</a>
+</nav>
+
+<!-- ============================================================
+     COMPONENT 6: AI SEARCH BAR
+============================================================ -->
+<div id="search-box">
+  <p id="search-label">What are you looking for?</p>
+  <div id="search-row">
+    <input id="search-input" type="text" placeholder="Ask me anything..." autocomplete="off" spellcheck="false" />
+    <button id="search-go" aria-label="Search">&#x2192;</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     COMPONENT 9: DROP TICKER
+============================================================ -->
+<div id="ticker" role="marquee" aria-label="Current drops">
+  <div id="ticker-track">
+    <span class="t-item">NEW DROP <span class="t-dot">&#9679;</span> AIR MAX PHANTOM</span>
+    <span class="t-item">SS26 COLLECTION LIVE <span class="t-dot">&#9679;</span></span>
+    <span class="t-item">ULTRA BOOST V3 <span class="t-dot">&#9679;</span> AVAILABLE NOW</span>
+    <span class="t-item">FREE SHIPPING OVER $150 <span class="t-dot">&#9679;</span></span>
+    <span class="t-item">COLLAB DROP: ST &times; ARCHIVE <span class="t-dot">&#9679;</span></span>
+    <span class="t-item">NEW DROP <span class="t-dot">&#9679;</span> AIR MAX PHANTOM</span>
+    <span class="t-item">SS26 COLLECTION LIVE <span class="t-dot">&#9679;</span></span>
+    <span class="t-item">ULTRA BOOST V3 <span class="t-dot">&#9679;</span> AVAILABLE NOW</span>
+    <span class="t-item">FREE SHIPPING OVER $150 <span class="t-dot">&#9679;</span></span>
+    <span class="t-item">COLLAB DROP: ST &times; ARCHIVE <span class="t-dot">&#9679;</span></span>
+  </div>
+</div>
+
+<!-- ============================================================
+     COMPONENT 7: PRODUCT DROP CARDS
+============================================================ -->
+<section id="products">
+
+  <!-- Card 1 — Running -->
+  <article class="p-card">
+    <div class="p-visual">
+      <svg width="280" height="165" viewBox="0 0 280 165" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Air Phantom Pro X sneaker">
+        <defs>
+          <linearGradient id="g1a" x1="0" y1="0" x2="280" y2="165" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.92"/>
+            <stop offset="100%" stop-color="#0055ff" stop-opacity="0.78"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="140" cy="140" rx="116" ry="13" fill="#111" stroke="#00e5ff" stroke-width="0.5" stroke-opacity="0.25"/>
+        <path d="M32 130 Q62 118 140 116 Q218 118 248 130 L242 138 Q200 130 140 128 Q80 130 38 138 Z" fill="#181818" stroke="#2a2a2a" stroke-width="0.5"/>
+        <path d="M54 130 Q68 86 96 70 Q128 54 164 58 Q200 62 224 80 Q246 96 248 122 L240 126 Q215 100 184 90 Q154 80 124 84 Q93 90 72 114 Z" fill="url(#g1a)" opacity="0.88"/>
+        <path d="M224 80 Q244 90 248 112 L240 117 Q232 97 222 86 Z" fill="#0055ff" opacity="0.9"/>
+        <path d="M96 70 Q118 56 146 53 Q166 51 183 58 L179 68 Q161 62 142 64 Q120 66 102 78 Z" fill="#00e5ff" opacity="0.38"/>
+        <line x1="108" y1="75" x2="138" y2="68" stroke="white" stroke-width="0.9" stroke-opacity="0.55"/>
+        <line x1="116" y1="80" x2="147" y2="72" stroke="white" stroke-width="0.9" stroke-opacity="0.55"/>
+        <line x1="125" y1="86" x2="157" y2="76" stroke="white" stroke-width="0.9" stroke-opacity="0.55"/>
+        <line x1="134" y1="92" x2="168" y2="80" stroke="white" stroke-width="0.9" stroke-opacity="0.55"/>
+        <path d="M54 130 Q62 96 74 85 Q82 79 92 80 Q79 102 70 124 Z" fill="#00ccdd" opacity="0.65"/>
+        <text x="175" y="108" font-family="Arial" font-weight="900" font-size="12" fill="white" opacity="0.55" letter-spacing="1">ST</text>
+        <path d="M40 134 Q140 130 240 134" stroke="#00e5ff" stroke-width="0.8" fill="none" stroke-opacity="0.35"/>
+        <ellipse cx="140" cy="150" rx="88" ry="5" fill="#00e5ff" opacity="0.05"/>
+      </svg>
+    </div>
+    <div class="p-overlay"></div>
+    <div class="p-info">
+      <p class="p-tag">// Running</p>
+      <h3 class="p-name">Air Phantom<br>Pro X</h3>
+      <p class="p-price">$189.00</p>
+      <a href="#" class="p-btn">Shop Now &#x2192;</a>
+    </div>
+  </article>
+
+  <!-- Card 2 — Lifestyle -->
+  <article class="p-card">
+    <div class="p-visual">
+      <svg width="280" height="165" viewBox="0 0 280 165" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Cloud Stack Bone White sneaker">
+        <defs>
+          <linearGradient id="g2a" x1="0" y1="0" x2="280" y2="165" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.96"/>
+            <stop offset="100%" stop-color="#bbbbbb" stop-opacity="0.82"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="140" cy="140" rx="116" ry="13" fill="#0e0e0e" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+        <path d="M30 122 Q57 108 140 106 Q224 108 250 122 L246 136 Q208 126 140 124 Q72 126 34 136 Z" fill="#1c1c1c" stroke="#2a2a2a" stroke-width="0.5"/>
+        <rect x="36" y="124" width="22" height="12" rx="2" fill="#222" stroke="#333" stroke-width="0.5"/>
+        <rect x="64" y="124" width="30" height="12" rx="2" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+        <rect x="102" y="122" width="76" height="14" rx="2" fill="#222" stroke="#333" stroke-width="0.5"/>
+        <rect x="184" y="124" width="34" height="12" rx="2" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+        <rect x="224" y="124" width="22" height="12" rx="2" fill="#222" stroke="#333" stroke-width="0.5"/>
+        <path d="M50 122 Q60 86 90 70 Q117 56 152 58 Q187 60 216 76 Q240 90 244 116 L236 120 Q210 96 180 88 Q150 80 120 84 Q88 90 70 114 Z" fill="url(#g2a)" opacity="0.92"/>
+        <path d="M90 70 Q108 60 132 58 L130 70 Q110 72 92 78 Z" fill="#e4e4e4" opacity="0.95"/>
+        <path d="M216 76 Q234 84 240 100 L232 104 Q220 88 210 80 Z" fill="#cccccc" opacity="0.92"/>
+        <path d="M90 78 Q122 66 158 64 Q188 63 212 74" stroke="#999" stroke-width="0.5" fill="none" stroke-dasharray="3,3"/>
+        <path d="M130 70 Q142 56 156 58 L153 80 Q145 74 134 76 Z" fill="#f2f2f2" opacity="0.82"/>
+        <text x="158" y="108" font-family="Arial" font-weight="900" font-size="14" fill="#000" opacity="0.35" letter-spacing="1">ST</text>
+        <path d="M38 130 Q140 126 242 130" stroke="#00e5ff" stroke-width="0.8" fill="none" stroke-opacity="0.4"/>
+        <ellipse cx="140" cy="150" rx="88" ry="5" fill="rgba(255,255,255,0.03)"/>
+      </svg>
+    </div>
+    <div class="p-overlay"></div>
+    <div class="p-info">
+      <p class="p-tag">// Lifestyle</p>
+      <h3 class="p-name">Cloud Stack<br>Bone White</h3>
+      <p class="p-price">$145.00</p>
+      <a href="#" class="p-btn">Shop Now &#x2192;</a>
+    </div>
+  </article>
+
+  <!-- Card 3 — Limited Drop -->
+  <article class="p-card">
+    <div class="p-visual">
+      <svg width="280" height="165" viewBox="0 0 280 165" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Void High Violet sneaker">
+        <defs>
+          <linearGradient id="g3a" x1="0" y1="0" x2="280" y2="165" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.92"/>
+            <stop offset="100%" stop-color="#ec4899" stop-opacity="0.82"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="140" cy="140" rx="113" ry="13" fill="#0d0d0d" stroke="#8b5cf6" stroke-width="0.5" stroke-opacity="0.35"/>
+        <path d="M34 128 Q80 115 140 114 Q200 115 246 128 L241 136 Q193 128 140 128 Q87 128 39 136 Z" fill="#1a0a30" stroke="#7c3aed" stroke-width="0.4" stroke-opacity="0.3"/>
+        <path d="M52 128 Q62 80 92 64 Q122 48 157 50 Q190 52 216 68 Q242 84 248 118 L238 122 Q211 96 176 86 Q146 78 116 80 Q82 84 67 110 Z" fill="url(#g3a)" opacity="0.9"/>
+        <path d="M90 64 Q112 50 142 48 Q167 48 184 58 L180 70 Q162 62 140 62 Q114 62 94 72 Z" fill="#ec4899" opacity="0.82"/>
+        <path d="M84 70 Q77 60 80 54 Q88 46 98 50 L96 62 Q90 62 86 68 Z" fill="#a855f7" opacity="0.7"/>
+        <path d="M228 90 Q244 94 248 106 L238 110 Q234 100 228 95 Z" fill="#ec4899" opacity="0.82"/>
+        <path d="M92 100 Q122 88 162 84 Q186 82 202 87" stroke="white" stroke-width="1.5" fill="none" stroke-opacity="0.28" stroke-linecap="round"/>
+        <line x1="102" y1="76" x2="133" y2="68" stroke="white" stroke-width="0.9" stroke-opacity="0.48"/>
+        <line x1="111" y1="82" x2="143" y2="73" stroke="white" stroke-width="0.9" stroke-opacity="0.48"/>
+        <line x1="120" y1="89" x2="153" y2="79" stroke="white" stroke-width="0.9" stroke-opacity="0.48"/>
+        <text x="172" y="108" font-family="Arial" font-weight="900" font-size="13" fill="white" opacity="0.48" letter-spacing="1">ST</text>
+        <ellipse cx="140" cy="150" rx="88" ry="5" fill="#7c3aed" opacity="0.07"/>
+        <path d="M40 134 Q140 130 240 134" stroke="#ec4899" stroke-width="0.8" fill="none" stroke-opacity="0.35"/>
+      </svg>
+    </div>
+    <div class="p-overlay"></div>
+    <div class="p-info">
+      <p class="p-tag">// Limited Drop</p>
+      <h3 class="p-name">Void High<br>Violet</h3>
+      <p class="p-price">$220.00</p>
+      <a href="#" class="p-btn">Reserve &#x2192;</a>
+    </div>
+  </article>
+
+</section>
+
+<!-- ============================================================
+     COMPONENT 8: BRAND STATEMENT
+============================================================ -->
+<section id="statement">
+  <p id="stmt-tag">// Our Philosophy</p>
+  <h2 id="stmt-title">Every Sole Has<br>a <em>Story</em> to Tell</h2>
+  <p id="stmt-sub">Engineered for movement. Designed for culture.</p>
+  <a href="#products" id="stmt-cta">Explore Collection</a>
+</section>
+
+<!-- ============================================================
+     COMPONENT 10: FOOTER
+============================================================ -->
+<footer id="footer">
+  <div id="footer-top">
+    <div>
+      <div id="footer-logo">SOLE<span>.</span>THEORY</div>
+      <p id="footer-tagline">Premium sneaker experiences.<br>Est. 2024.</p>
+    </div>
+    <div class="f-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="#">Running</a></li>
+        <li><a href="#">Basketball</a></li>
+        <li><a href="#">Lifestyle</a></li>
+        <li><a href="#">Collaborations</a></li>
+        <li><a href="#">Limited Drops</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Stockists</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Size Guide</a></li>
+        <li><a href="#">Shipping &amp; Returns</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Follow</h4>
+      <ul>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">TikTok</a></li>
+        <li><a href="#">Twitter / X</a></li>
+        <li><a href="#">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+  <div id="footer-bottom">
+    <span>&copy; 2026 Sole Theory Inc.</span>
+    <span>Privacy &nbsp;&middot;&nbsp; Terms &nbsp;&middot;&nbsp; Cookies</span>
+  </div>
+</footer>
+
+<!-- ============================================================
+     COMPONENT 11: COOKIE BANNER
+============================================================ -->
+<div id="cookie" role="dialog" aria-label="Cookie consent">
+  <span>
+    Our site uses essential cookies and, with your consent, analytics cookies.
+    Details in our <a href="#" class="ck-link">Privacy Notice.</a>
+  </span>
+  <div class="ck-btns">
+    <button class="ck-btn accept" onclick="document.getElementById('cookie').style.display='none'">Accept Cookies</button>
+    <button class="ck-btn" onclick="document.getElementById('cookie').style.display='none'">Reject Cookies</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  /* ── helpers ─────────────────────────────────── */
+  function qs(sel) { return document.querySelector(sel); }
+  function qsa(sel) { return document.querySelectorAll(sel); }
+  function show(el) { if (el) el.classList.add('show'); }
+
+  /* ── 1. LOADER ───────────────────────────────── */
+  var ring  = qs('#loader-ring');
+  var pct   = qs('#loader-pct');
+  var loader = qs('#loader');
+  var progress = 0;
+
+  function buildRing(p) {
+    var rows = 13, cols = 28;
+    var cx = cols / 2, cy = rows / 2, r = 5.2;
+    var out = '';
+    for (var y = 0; y < rows; y++) {
+      for (var x = 0; x < cols; x++) {
+        var dx = (x - cx) * 0.58, dy = y - cy;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var angle = (Math.atan2(dy, dx) + Math.PI) / (Math.PI * 2);
+        if (dist > r - 1.1 && dist < r + 1.1) {
+          out += (angle * 100 < p) ? '/' : '·';
+        } else {
+          out += ' ';
+        }
+      }
+      out += '\n';
+    }
+    return out;
+  }
+
+  var loaderTimer = setInterval(function() {
+    progress += Math.random() * 3.5 + 1.2;
+    if (progress > 100) progress = 100;
+    var p = Math.round(progress);
+    ring.textContent = buildRing(p);
+    pct.textContent  = '/' + (p < 10 ? '0' : '') + p;
+    if (progress >= 100) {
+      clearInterval(loaderTimer);
+      ring.classList.add('lit');
+      setTimeout(revealSite, 500);
+    }
+  }, 52);
+
+  function revealSite() {
+    loader.classList.add('fade-out');
+    document.body.classList.remove('loading');
+    setTimeout(function() { loader.style.display = 'none'; }, 1000);
+
+    /* show canvas, nav, hero, cat-nav, search */
+    show(qs('#canvas-bg'));
+    show(qs('#nav'));
+    show(qs('#hero'));
+    show(qs('#cat-nav'));
+    show(qs('#search-box'));
+
+    /* show cookie after short delay */
+    setTimeout(function() { show(qs('#cookie')); }, 1800);
+  }
+
+  /* ── 3. CANVAS PARTICLES ─────────────────────── */
+  try {
+    var canvas = qs('#canvas-bg');
+    var ctx    = canvas.getContext('2d');
+    var mX = window.innerWidth / 2, mY = window.innerHeight / 2;
+
+    function resizeCv() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCv();
+    window.addEventListener('resize', resizeCv);
+    document.addEventListener('mousemove', function(e) { mX = e.clientX; mY = e.clientY; });
+
+    var pts = [];
+    for (var i = 0; i < 110; i++) {
+      pts.push({
+        x:  Math.random() * window.innerWidth,
+        y:  Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: (Math.random() - 0.5) * 0.28,
+        r:  Math.random() * 1.4 + 0.3,
+        op: Math.random() * 0.45 + 0.1,
+        cy: Math.random() > 0.82
+      });
+    }
+
+    function drawPts() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (var a = 0; a < pts.length; a++) {
+        for (var b = a + 1; b < pts.length; b++) {
+          var dx = pts[a].x - pts[b].x;
+          var dy = pts[a].y - pts[b].y;
+          var d  = Math.sqrt(dx*dx + dy*dy);
+          if (d < 95) {
+            ctx.beginPath();
+            ctx.moveTo(pts[a].x, pts[a].y);
+            ctx.lineTo(pts[b].x, pts[b].y);
+            ctx.strokeStyle = 'rgba(0,229,255,' + (0.025 * (1 - d/95)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+        var dmx = pts[a].x - mX, dmy = pts[a].y - mY;
+        var dm  = Math.sqrt(dmx*dmx + dmy*dmy);
+        if (dm < 140) {
+          ctx.beginPath();
+          ctx.moveTo(pts[a].x, pts[a].y);
+          ctx.lineTo(mX, mY);
+          ctx.strokeStyle = 'rgba(0,229,255,' + (0.055 * (1 - dm/140)) + ')';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(pts[a].x, pts[a].y, pts[a].r, 0, Math.PI * 2);
+        ctx.fillStyle = pts[a].cy ? '#00e5ff' : 'rgba(255,255,255,0.5)';
+        ctx.globalAlpha = pts[a].op;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        pts[a].x += pts[a].vx;
+        pts[a].y += pts[a].vy;
+        if (pts[a].x < 0 || pts[a].x > canvas.width)  pts[a].vx *= -1;
+        if (pts[a].y < 0 || pts[a].y > canvas.height) pts[a].vy *= -1;
+      }
+      requestAnimationFrame(drawPts);
+    }
+    drawPts();
+  } catch(e) { /* canvas not supported — silent fallback */ }
+
+  /* ── 4. ASCII HERO ART ───────────────────────── */
+  try {
+    var ascii = qs('#hero-ascii');
+    var chars = ['/','/',' ',' ',' ','7','5','/','/',' '];
+    function buildAscii() {
+      var rows = 22, cols = 58, out = '';
+      for (var y = 0; y < rows; y++) {
+        for (var x = 0; x < cols; x++) {
+          out += Math.random() > 0.78
+            ? chars[Math.floor(Math.random() * chars.length)]
+            : (Math.random() > 0.5 ? '/' : ' ');
+        }
+        out += '\n';
+      }
+      return out;
+    }
+    ascii.textContent = buildAscii();
+    setInterval(function() {
+      var t = ascii.textContent.split('');
+      var idx = Math.floor(Math.random() * t.length);
+      t[idx] = chars[Math.floor(Math.random() * chars.length)];
+      ascii.textContent = t.join('');
+    }, 75);
+  } catch(e) {}
+
+  /* ── 12. AUDIO TOGGLE ────────────────────────── */
+  var audioBtn = qs('#btn-audio');
+  var audioOn  = false;
+  audioBtn.addEventListener('click', function() {
+    audioOn = !audioOn;
+    audioBtn.textContent = audioOn ? '\u25FC Audio' : '\u25BA Audio';
+    audioBtn.classList.toggle('on', audioOn);
+  });
+
+  /* ── 5. CATEGORY NAV active state ────────────── */
+  qsa('.cat-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      qsa('.cat-link').forEach(function(l) { l.classList.remove('active'); });
+      link.classList.add('active');
+    });
+  });
+
+  /* ── 6. SEARCH ───────────────────────────────── */
+  var inp   = qs('#search-input');
+  var goBtn = qs('#search-go');
+  function doSearch() {
+    var val = inp.value.trim();
+    if (!val) return;
+    inp.value = '';
+    inp.placeholder = 'Searching for "' + val + '"...';
+    setTimeout(function() { inp.placeholder = 'Ask me anything...'; }, 2200);
+  }
+  goBtn.addEventListener('click', doSearch);
+  inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') doSearch(); });
+
+  /* ── 7. PRODUCT CARD scroll reveal ───────────── */
+  try {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry, i) {
+        if (entry.isIntersecting) {
+          var card = entry.target;
+          var delay = (Array.prototype.indexOf.call(qsa('.p-card'), card)) * 0.12;
+          card.style.transitionDelay = delay + 's';
+          card.classList.add('reveal');
+          obs.unobserve(card);
+        }
+      });
+    }, { threshold: 0.12 });
+    qsa('.p-card').forEach(function(c) { obs.observe(c); });
+  } catch(e) {
+    /* Fallback: just show all cards */
+    qsa('.p-card').forEach(function(c) { c.classList.add('reveal'); });
+  }
+
+  /* ── hide scroll hint on first scroll ────────── */
+  var scrollHint = qs('#scroll-hint');
+  window.addEventListener('scroll', function() {
+    if (scrollHint) scrollHint.style.opacity = '0';
+  }, { once: true });
+
+})();
+</script>
+</body>
+</html>
