@@ -1356,10 +1356,10 @@ window.addEventListener('load', function() {
 
   /* ── LIGHTS — studio-quality for black leather ── */
   // Strong ambient so black leather is visible
-  scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.20));
 
   // Key light — warm white, upper right front
-  var key = new THREE.DirectionalLight(0xfff6ee, 3.0);
+  var key = new THREE.DirectionalLight(0xfff6ee, 1.8);
   key.position.set(6, 12, 8);
   key.castShadow = true;
   key.shadow.mapSize.setScalar(2048);
@@ -1369,19 +1369,19 @@ window.addEventListener('load', function() {
   scene.add(key);
 
   // Fill from left — cool blue
-  var fill = new THREE.DirectionalLight(0xc0d8ff, 1.4);
+  var fill = new THREE.DirectionalLight(0xc0d8ff, 0.7);
   fill.position.set(-10, 6, 6); scene.add(fill);
 
   // Cyan rim from behind — Active Theory aesthetic
-  var rim = new THREE.DirectionalLight(0x00e5ff, 2.8);
+  var rim = new THREE.DirectionalLight(0x00e5ff, 3.2);
   rim.position.set(-4, 8, -12); scene.add(rim);
 
   // Bottom fill — lights the outsole from below
-  var bot = new THREE.DirectionalLight(0xffffff, 0.9);
+  var bot = new THREE.DirectionalLight(0xffffff, 0.5);
   bot.position.set(0, -10, 5); scene.add(bot);
 
   // Point light — strong specular highlights on the silver
-  var pt = new THREE.PointLight(0xffffff, 2.2, 18);
+  var pt = new THREE.PointLight(0xffffff, 1.5, 16);
   pt.position.set(3, 5, 6); scene.add(pt);
 
   /* ground shadow */
@@ -1407,7 +1407,7 @@ window.addEventListener('load', function() {
      MATERIALS  — Jordan 12 Retro Barons  CT8013-010
      Colorway: Black / Metallic Silver / Icy outsole
   ─────────────────────────────────────────────────────── */
-  var mLeather = new THREE.MeshStandardMaterial({color:0x222222, roughness:0.40, metalness:0.08});   // black leather upper
+  var mLeather = new THREE.MeshStandardMaterial({color:0x2e2e2e, roughness:0.38, metalness:0.10});   // black leather upper
   var mLeatherD= new THREE.MeshStandardMaterial({color:0x181818, roughness:0.35, metalness:0.05});   // darker leather (midsole/heel)
   var mSilver  = new THREE.MeshStandardMaterial({color:0xd0d0d0, roughness:0.10, metalness:0.96});   // bright metallic silver
   var mSilvDk  = new THREE.MeshStandardMaterial({color:0x888888, roughness:0.22, metalness:0.88});   // dark silver
