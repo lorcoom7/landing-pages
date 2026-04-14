@@ -1346,7 +1346,7 @@ window.addEventListener('load', function() {
   renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
   renderer.outputEncoding    = THREE.sRGBEncoding;
   renderer.toneMapping       = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.6;
+  renderer.toneMappingExposure = 1.1;
 
   /* ── SCENE / CAMERA ── */
   var scene  = new THREE.Scene();
@@ -1356,10 +1356,10 @@ window.addEventListener('load', function() {
 
   /* ── LIGHTS — studio-quality for black leather ── */
   // Strong ambient so black leather is visible
-  scene.add(new THREE.AmbientLight(0xffffff, 1.10));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
 
   // Key light — warm white, upper right front
-  var key = new THREE.DirectionalLight(0xfff6ee, 4.5);
+  var key = new THREE.DirectionalLight(0xfff6ee, 3.0);
   key.position.set(6, 12, 8);
   key.castShadow = true;
   key.shadow.mapSize.setScalar(2048);
@@ -1369,19 +1369,19 @@ window.addEventListener('load', function() {
   scene.add(key);
 
   // Fill from left — cool blue
-  var fill = new THREE.DirectionalLight(0xc0d8ff, 2.2);
+  var fill = new THREE.DirectionalLight(0xc0d8ff, 1.4);
   fill.position.set(-10, 6, 6); scene.add(fill);
 
   // Cyan rim from behind — Active Theory aesthetic
-  var rim = new THREE.DirectionalLight(0x00e5ff, 3.5);
+  var rim = new THREE.DirectionalLight(0x00e5ff, 2.8);
   rim.position.set(-4, 8, -12); scene.add(rim);
 
   // Bottom fill — lights the outsole from below
-  var bot = new THREE.DirectionalLight(0xffffff, 1.8);
+  var bot = new THREE.DirectionalLight(0xffffff, 0.9);
   bot.position.set(0, -10, 5); scene.add(bot);
 
   // Point light — strong specular highlights on the silver
-  var pt = new THREE.PointLight(0xffffff, 3.0, 18);
+  var pt = new THREE.PointLight(0xffffff, 2.2, 18);
   pt.position.set(3, 5, 6); scene.add(pt);
 
   /* ground shadow */
