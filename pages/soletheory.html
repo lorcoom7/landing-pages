@@ -1354,31 +1354,27 @@ window.addEventListener('load', function() {
   camera.position.set(0, 1.6, 9.5);
   camera.lookAt(0, 0.6, 0);
 
-  /* ── LIGHTS — dramatic product-shoot: hard key + cyan rim ── */
-  // Minimal ambient — black leather stays black in shadows
-  scene.add(new THREE.AmbientLight(0x1a2a3a, 0.80));  // dark blue ambient - reveals shape without washing out
+  /* ── LIGHTS — edge-only product shoot for black leather ── */
+  // Dark blue ambient — gives just enough light to read the form
+  scene.add(new THREE.AmbientLight(0x1a2535, 1.20));
 
-  // KEY — hard white from upper-right-front, casts real shadows
-  var key = new THREE.DirectionalLight(0xffffff, 2.4);
-  key.position.set(14, 10, 3);
-  key.castShadow = true;
-  key.shadow.mapSize.setScalar(2048);
-  key.shadow.camera.near = 1; key.shadow.camera.far  = 30;
-  key.shadow.camera.left = -8; key.shadow.camera.right  = 8;
-  key.shadow.camera.top  =  8; key.shadow.camera.bottom = -8;
-  scene.add(key);
-
-  // CYAN RIM — strong from upper-left-behind (Active Theory aesthetic edge pop)
-  var rim = new THREE.DirectionalLight(0x00e5ff, 5.0);
+  // CYAN BACK-RIM — the primary light, wraps around the silhouette
+  var rim = new THREE.DirectionalLight(0x00e5ff, 6.0);
   rim.position.set(-10, 8, -14); scene.add(rim);
 
-  // Subtle under-fill — just enough to read the icy outsole from below
-  var bot = new THREE.DirectionalLight(0x88aacc, 0.4);
-  bot.position.set(0, -8, 6); scene.add(bot);
+  // Second rim from upper-right — white, creates the other edge
+  var rim2 = new THREE.DirectionalLight(0xffffff, 1.8);
+  rim2.position.set(12, 10, -6); scene.add(rim2);
 
-  // Tight point — strong specular pop on silver midsole stripe
-  var pt = new THREE.PointLight(0xffffff, 2.8, 12);
-  pt.position.set(4, 4, 7); scene.add(pt);
+  // Tight front point — illuminates silver details + icy outsole only
+  var pt = new THREE.PointLight(0xffffff, 1.8, 10);
+  pt.position.set(3, 2, 8); scene.add(pt);
+  pt.castShadow = true;
+  pt.shadow.mapSize.setScalar(1024);
+
+  // Under-light for the translucent outsole
+  var bot = new THREE.DirectionalLight(0x6699bb, 0.6);
+  bot.position.set(0, -8, 5); scene.add(bot);
 
   /* ground shadow */
   var shadow = new THREE.Mesh(
