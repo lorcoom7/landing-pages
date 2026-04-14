@@ -1345,8 +1345,8 @@ window.addEventListener('load', function() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
   renderer.outputEncoding    = THREE.sRGBEncoding;
-  renderer.toneMapping       = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMapping       = THREE.LinearToneMapping;
+  renderer.toneMappingExposure = 0.95;
 
   /* ── SCENE / CAMERA ── */
   var scene  = new THREE.Scene();
@@ -1356,7 +1356,7 @@ window.addEventListener('load', function() {
 
   /* ── LIGHTS — studio-quality for black leather ── */
   // Strong ambient so black leather is visible
-  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.28));
 
   // Key light — warm white, upper right front
   var key = new THREE.DirectionalLight(0xfff6ee, 3.0);
@@ -1407,11 +1407,11 @@ window.addEventListener('load', function() {
      MATERIALS  — Jordan 12 Retro Barons  CT8013-010
      Colorway: Black / Metallic Silver / Icy outsole
   ─────────────────────────────────────────────────────── */
-  var mLeather = new THREE.MeshStandardMaterial({color:0x181818, roughness:0.42, metalness:0.07});   // black leather upper
-  var mLeatherD= new THREE.MeshStandardMaterial({color:0x101010, roughness:0.38, metalness:0.05});   // darker leather (midsole/heel)
+  var mLeather = new THREE.MeshStandardMaterial({color:0x222222, roughness:0.40, metalness:0.08});   // black leather upper
+  var mLeatherD= new THREE.MeshStandardMaterial({color:0x181818, roughness:0.35, metalness:0.05});   // darker leather (midsole/heel)
   var mSilver  = new THREE.MeshStandardMaterial({color:0xd0d0d0, roughness:0.10, metalness:0.96});   // bright metallic silver
   var mSilvDk  = new THREE.MeshStandardMaterial({color:0x888888, roughness:0.22, metalness:0.88});   // dark silver
-  var mCarbon  = new THREE.MeshStandardMaterial({color:0x1c1c1c, roughness:0.18, metalness:0.65});   // carbon fibre panel
+  var mCarbon  = new THREE.MeshStandardMaterial({color:0x1a1a1a, roughness:0.15, metalness:0.70});   // carbon fibre panel
   var mCarbonH = new THREE.MeshStandardMaterial({color:0x2a2a2a, roughness:0.24, metalness:0.55});   // lighter carbon highlight
   var mIcy     = new THREE.MeshStandardMaterial({color:0xb8d8ee, roughness:0.04, metalness:0.07, transparent:true, opacity:0.68}); // icy outsole
   var mRubber  = new THREE.MeshStandardMaterial({color:0x090909, roughness:0.90, metalness:0.0});    // tread rubber
