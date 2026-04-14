@@ -1397,20 +1397,20 @@ window.addEventListener('load', function() {
 
   /* ───────────────────────────────────────────────────────
      MATERIALS  — Jordan 12 Retro Barons  CT8013-010
-     Lambert for dark parts (no specular = stays genuinely black)
-     Standard for metallic/shiny parts only
+     MeshBasicMaterial for all dark parts = lighting has ZERO effect,
+     color is ALWAYS exactly what you set. Silver/icy use Standard.
   ─────────────────────────────────────────────────────── */
-  var mLeather = new THREE.MeshLambertMaterial({color:0x2a2a2a});                                    // black leather upper
-  var mLeatherD= new THREE.MeshLambertMaterial({color:0x161616});                                    // darker leather (midsole/heel)
-  var mSilver  = new THREE.MeshStandardMaterial({color:0xe0e0e0, roughness:0.08, metalness:0.98});   // bright metallic silver
-  var mSilvDk  = new THREE.MeshStandardMaterial({color:0xa0a0a0, roughness:0.20, metalness:0.90});   // dark silver
-  var mCarbon  = new THREE.MeshLambertMaterial({color:0x141414});                                    // carbon fibre panel
-  var mCarbonH = new THREE.MeshLambertMaterial({color:0x202020});                                    // lighter carbon highlight
-  var mIcy     = new THREE.MeshStandardMaterial({color:0xaad0e8, roughness:0.03, metalness:0.05, transparent:true, opacity:0.72}); // icy outsole
-  var mRubber  = new THREE.MeshLambertMaterial({color:0x080808});                                    // tread rubber
-  var mLace    = new THREE.MeshLambertMaterial({color:0x181818});                                    // black laces
-  var mEyelet  = new THREE.MeshStandardMaterial({color:0xf0f0f0, roughness:0.06, metalness:1.0});    // silver eyelets
-  var mPad     = new THREE.MeshLambertMaterial({color:0x1c1c1c});                                    // collar padding
+  var mLeather = new THREE.MeshBasicMaterial({color:0x2c2c2c});   // black leather upper — always this shade
+  var mLeatherD= new THREE.MeshBasicMaterial({color:0x1a1a1a});   // darker leather — midsole/heel/toe
+  var mSilver  = new THREE.MeshStandardMaterial({color:0xeeeeee, roughness:0.06, metalness:0.99});   // bright metallic silver
+  var mSilvDk  = new THREE.MeshStandardMaterial({color:0xb8b8b8, roughness:0.18, metalness:0.92});   // dark silver
+  var mCarbon  = new THREE.MeshBasicMaterial({color:0x181818});   // carbon fibre panel
+  var mCarbonH = new THREE.MeshBasicMaterial({color:0x232323});   // lighter carbon highlight
+  var mIcy     = new THREE.MeshStandardMaterial({color:0xaad0e8, roughness:0.02, metalness:0.04, transparent:true, opacity:0.75}); // icy outsole
+  var mRubber  = new THREE.MeshBasicMaterial({color:0x0c0c0c});   // tread rubber
+  var mLace    = new THREE.MeshBasicMaterial({color:0x1e1e1e});   // black laces
+  var mEyelet  = new THREE.MeshStandardMaterial({color:0xf8f8f8, roughness:0.04, metalness:1.0});    // silver eyelets
+  var mPad     = new THREE.MeshBasicMaterial({color:0x1e1e1e});   // collar padding
 
   /* ── SHOE GROUP ── */
   var shoe = new THREE.Group();
