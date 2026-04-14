@@ -1331,280 +1331,236 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 window.addEventListener('load', function() {
-
   var canvas = document.getElementById('shoe-canvas');
-  if (!canvas) return;
+  if (!canvas) { console.error('no canvas'); return; }
   if (typeof THREE === 'undefined') { console.error('THREE not loaded'); return; }
 
-  /* ── size ── */
   var W = 680, H = 420;
 
-  /* ── renderer ── */
-  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  /* ── RENDERER — opaque black background so shoe is always visible ── */
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+  renderer.setClearColor(0x000000, 1);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(W, H);
+  renderer.setSize(W, H, false);   /* false = don't touch CSS */
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
-  renderer.toneMapping        = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.outputEncoding    = THREE.sRGBEncoding;
+  renderer.toneMapping       = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.6;
 
-  /* ── scene / camera ── */
+  /* ── SCENE / CAMERA ── */
   var scene  = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
-  camera.position.set(0, 1.5, 9);
-  camera.lookAt(0, 0.5, 0);
+  var camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 100);
+  camera.position.set(0, 1.6, 9.5);
+  camera.lookAt(0, 0.6, 0);
 
-  /* ── lights ── */
-  scene.add(new THREE.AmbientLight(0x111122, 1.4));
+  /* ── LIGHTS — enough to guarantee visibility ── */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
 
-  var key = new THREE.DirectionalLight(0xffffff, 3.2);
-  key.position.set(6, 10, 6);
+  var key = new THREE.DirectionalLight(0xffffff, 3.5);
+  key.position.set(5, 10, 7);
   key.castShadow = true;
-  key.shadow.mapSize.width  = 2048;
-  key.shadow.mapSize.height = 2048;
-  key.shadow.camera.near = 0.5; key.shadow.camera.far = 30;
-  key.shadow.camera.left = -7; key.shadow.camera.right = 7;
+  key.shadow.mapSize.setScalar(2048);
+  key.shadow.camera.near = 1; key.shadow.camera.far  = 30;
+  key.shadow.camera.left = -7; key.shadow.camera.right  = 7;
   key.shadow.camera.top  =  7; key.shadow.camera.bottom = -7;
   scene.add(key);
 
-  var fill = new THREE.DirectionalLight(0x3366ff, 0.7);
-  fill.position.set(-6, 3, -4);
-  scene.add(fill);
+  /* rim lights for edge definition */
+  var rimL = new THREE.DirectionalLight(0x00e5ff, 2.0);
+  rimL.position.set(-6, 5, -8); scene.add(rimL);
 
-  var rim = new THREE.DirectionalLight(0x00e5ff, 1.4);
-  rim.position.set(0, 4, -9);
-  scene.add(rim);
+  var rimR = new THREE.DirectionalLight(0x4488ff, 1.0);
+  rimR.position.set(6, 2, -6); scene.add(rimR);
 
-  scene.add(new THREE.DirectionalLight(0xffffff, 0.5)).position.set(0, -5, 3);
+  /* point light sits right on the shoe — guaranteed illuminate */
+  var pt = new THREE.PointLight(0xffffff, 2.0, 20);
+  pt.position.set(0, 3, 4); scene.add(pt);
 
-  /* shadow catcher */
-  var gMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(14, 14),
-    new THREE.ShadowMaterial({ opacity: 0.3 })
+  /* ground shadow */
+  var shadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(12,12),
+    new THREE.ShadowMaterial({ opacity:0.4 })
   );
-  gMesh.rotation.x = -Math.PI / 2;
-  gMesh.position.y = -1.12;
-  gMesh.receiveShadow = true;
-  scene.add(gMesh);
+  shadow.rotation.x = -Math.PI/2;
+  shadow.position.y = -1.15;
+  shadow.receiveShadow = true;
+  scene.add(shadow);
 
-  /* glow disc */
-  var disc = new THREE.Mesh(
-    new THREE.CircleGeometry(2.0, 48),
-    new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.07 })
+  /* glow ring under shoe */
+  var ring = new THREE.Mesh(
+    new THREE.RingGeometry(1.8, 2.2, 64),
+    new THREE.MeshBasicMaterial({ color:0x00e5ff, transparent:true, opacity:0.12, side:THREE.DoubleSide })
   );
-  disc.rotation.x = -Math.PI / 2;
-  disc.position.y = -1.11;
-  scene.add(disc);
+  ring.rotation.x = -Math.PI/2;
+  ring.position.y = -1.14;
+  scene.add(ring);
 
-  /* ── materials ── */
-  var mBlack     = new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 0.4,  metalness: 0.08 });
-  var mBlackSoft = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.58, metalness: 0.04 });
-  var mSilver    = new THREE.MeshStandardMaterial({ color: 0x909090, roughness: 0.22, metalness: 0.92 });
-  var mSilverDk  = new THREE.MeshStandardMaterial({ color: 0x585858, roughness: 0.30, metalness: 0.85 });
-  var mIcy       = new THREE.MeshStandardMaterial({ color: 0xbcd4e0, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.88 });
-  var mEyelet    = new THREE.MeshStandardMaterial({ color: 0xb2b2b2, roughness: 0.18, metalness: 1.0  });
-  var mLace      = new THREE.MeshStandardMaterial({ color: 0x0d0d0d, roughness: 0.75, metalness: 0.0  });
+  /* ── MATERIALS  (lighter so visible on dark bg) ── */
+  var mBlack  = new THREE.MeshStandardMaterial({ color:0x252525, roughness:0.4, metalness:0.15 });
+  var mBlackS = new THREE.MeshStandardMaterial({ color:0x303030, roughness:0.6, metalness:0.05 });
+  var mSilver = new THREE.MeshStandardMaterial({ color:0xb0b0b0, roughness:0.18, metalness:0.95 });
+  var mSilvDk = new THREE.MeshStandardMaterial({ color:0x787878, roughness:0.28, metalness:0.85 });
+  var mIcy    = new THREE.MeshStandardMaterial({ color:0xd0e4f0, roughness:0.05, metalness:0.10, transparent:true, opacity:0.90 });
+  var mLace   = new THREE.MeshStandardMaterial({ color:0x1a1a1a, roughness:0.75, metalness:0.0  });
+  var mEyelet = new THREE.MeshStandardMaterial({ color:0xcccccc, roughness:0.15, metalness:1.0  });
 
-  /* ── shoe group ── */
+  /* ── SHOE GROUP ── */
   var shoe = new THREE.Group();
   scene.add(shoe);
 
-  function mesh(geo, mat, x, y, z) {
+  function add(geo, mat, x, y, z) {
     var m = new THREE.Mesh(geo, mat);
     m.position.set(x||0, y||0, z||0);
     m.castShadow = true; m.receiveShadow = true;
     shoe.add(m); return m;
   }
 
-  /* ════════════════════════════════════
-     OUTSOLE  (icy translucent rubber)
-  ════════════════════════════════════ */
-  mesh(new THREE.BoxGeometry(3.8, 0.13, 1.46), mIcy, 0, 0, 0);
+  /* ══════════════════════════════
+     OUTSOLE — icy translucent
+  ══════════════════════════════ */
+  add(new THREE.BoxGeometry(3.8, 0.14, 1.46), mIcy);
 
-  var tsGeo = new THREE.CylinderGeometry(0.73, 0.73, 0.13, 24, 1, false, 0, Math.PI);
-  var ts = new THREE.Mesh(tsGeo, mIcy);
-  ts.rotation.y = -Math.PI/2; ts.position.set(1.9, 0, 0);
-  ts.castShadow = true; shoe.add(ts);
+  var tcg = new THREE.CylinderGeometry(0.73, 0.73, 0.14, 28, 1, false, 0, Math.PI);
+  var tc  = new THREE.Mesh(tcg, mIcy);
+  tc.rotation.y = -Math.PI/2; tc.position.set(1.9, 0, 0); tc.castShadow=true; shoe.add(tc);
 
-  var hsGeo = new THREE.CylinderGeometry(0.73, 0.73, 0.13, 24, 1, false, Math.PI, Math.PI);
-  var hs = new THREE.Mesh(hsGeo, mIcy);
-  hs.rotation.y = -Math.PI/2; hs.position.set(-1.9, 0, 0);
-  hs.castShadow = true; shoe.add(hs);
+  var hcg = new THREE.CylinderGeometry(0.73, 0.73, 0.14, 28, 1, false, Math.PI, Math.PI);
+  var hc  = new THREE.Mesh(hcg, mIcy);
+  hc.rotation.y = -Math.PI/2; hc.position.set(-1.9, 0, 0); hc.castShadow=true; shoe.add(hc);
 
-  /* herringbone tread */
-  for (var t = 0; t < 16; t++) {
-    var tb = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.15, 1.22), mBlack);
-    tb.rotation.y = (t % 2 === 0) ? 0.3 : -0.3;
-    tb.position.set(-1.88 + t * 0.255, 0.0, 0);
+  /* herringbone tread bars */
+  for (var t=0; t<16; t++) {
+    var tb = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.16, 1.24), mBlack);
+    tb.rotation.y = (t%2===0) ? 0.3 : -0.3;
+    tb.position.set(-1.88 + t*0.255, 0.01, 0);
     shoe.add(tb);
   }
 
-  /* ════════════════════════════════════
-     MIDSOLE  (silver metallic)
-  ════════════════════════════════════ */
-  mesh(new THREE.BoxGeometry(3.62, 0.26, 1.34), mSilver, 0, 0.195, 0);
+  /* ══════════════════════════════
+     MIDSOLE — silver
+  ══════════════════════════════ */
+  add(new THREE.BoxGeometry(3.62, 0.27, 1.34), mSilver, 0, 0.2, 0);
 
-  var tmGeo = new THREE.CylinderGeometry(0.67, 0.67, 0.26, 24, 1, false, 0, Math.PI);
-  var tm = new THREE.Mesh(tmGeo, mSilver);
-  tm.rotation.y = -Math.PI/2; tm.position.set(1.81, 0.195, 0); shoe.add(tm);
+  var tmg = new THREE.CylinderGeometry(0.67, 0.67, 0.27, 28, 1, false, 0, Math.PI);
+  var tmm = new THREE.Mesh(tmg, mSilver); tmm.rotation.y=-Math.PI/2; tmm.position.set(1.81,0.2,0); shoe.add(tmm);
 
-  var hmGeo = new THREE.CylinderGeometry(0.67, 0.67, 0.26, 24, 1, false, Math.PI, Math.PI);
-  var hm = new THREE.Mesh(hmGeo, mSilver);
-  hm.rotation.y = -Math.PI/2; hm.position.set(-1.81, 0.195, 0); shoe.add(hm);
+  var hmg = new THREE.CylinderGeometry(0.67, 0.67, 0.27, 28, 1, false, Math.PI, Math.PI);
+  var hmm = new THREE.Mesh(hmg, mSilver); hmm.rotation.y=-Math.PI/2; hmm.position.set(-1.81,0.2,0); shoe.add(hmm);
 
-  mesh(new THREE.BoxGeometry(3.65, 0.04, 1.35), mSilverDk, 0, 0.325, 0);
+  add(new THREE.BoxGeometry(3.65, 0.05, 1.35), mSilvDk, 0, 0.335, 0);
 
-  /* ════════════════════════════════════
-     UPPER  (ExtrudeGeometry — J12 profile)
-  ════════════════════════════════════ */
-  var prof = new THREE.Shape();
-  prof.moveTo(-1.82, 0.33);
-  prof.lineTo( 1.52, 0.33);
-  prof.quadraticCurveTo( 2.18, 0.33,  2.18, 0.88);
-  prof.quadraticCurveTo( 2.14, 1.28,  1.68, 1.32);
-  prof.quadraticCurveTo( 1.10, 1.37,  0.58, 1.34);
-  prof.quadraticCurveTo( 0.05, 1.31, -0.30, 1.44);
-  prof.quadraticCurveTo(-0.65, 1.58, -0.88, 1.76);
-  prof.quadraticCurveTo(-1.08, 1.94, -1.32, 1.84);
-  prof.quadraticCurveTo(-1.62, 1.78, -1.88, 1.68);
-  prof.quadraticCurveTo(-2.08, 1.52, -2.08, 1.18);
-  prof.quadraticCurveTo(-2.08, 0.62, -1.82, 0.33);
+  /* ══════════════════════════════
+     UPPER — Jordan 12 profile
+  ══════════════════════════════ */
+  var p = new THREE.Shape();
+  p.moveTo(-1.82, 0.34);
+  p.lineTo( 1.52, 0.34);
+  p.quadraticCurveTo( 2.18, 0.34,  2.18, 0.90);
+  p.quadraticCurveTo( 2.14, 1.30,  1.68, 1.34);
+  p.quadraticCurveTo( 1.10, 1.38,  0.58, 1.35);
+  p.quadraticCurveTo( 0.05, 1.32, -0.30, 1.45);
+  p.quadraticCurveTo(-0.65, 1.59, -0.88, 1.77);
+  p.quadraticCurveTo(-1.08, 1.95, -1.32, 1.85);
+  p.quadraticCurveTo(-1.62, 1.79, -1.88, 1.69);
+  p.quadraticCurveTo(-2.08, 1.53, -2.08, 1.19);
+  p.quadraticCurveTo(-2.08, 0.63, -1.82, 0.34);
 
-  var extOpts = { depth: 1.32, bevelEnabled: true, bevelThickness: 0.055, bevelSize: 0.055, bevelSegments: 4, steps: 2 };
-  var upperMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(prof, extOpts), mBlack);
-  upperMesh.position.set(0, 0, -0.66);
-  upperMesh.castShadow = true; upperMesh.receiveShadow = true;
-  shoe.add(upperMesh);
+  var ext = { depth:1.32, bevelEnabled:true, bevelThickness:0.06, bevelSize:0.06, bevelSegments:4, steps:2 };
+  var um = new THREE.Mesh(new THREE.ExtrudeGeometry(p, ext), mBlack);
+  um.position.set(0, 0, -0.66); um.castShadow=true; um.receiveShadow=true; shoe.add(um);
 
-  /* ════════════════════════════════════
-     SIDE DETAIL PANELS  (silver accents)
-  ════════════════════════════════════ */
+  /* ══════════════════════════════
+     SIDE PANELS — silver accent
+  ══════════════════════════════ */
   var sp = new THREE.Shape();
-  sp.moveTo(-0.5, 0.58); sp.lineTo(1.40, 0.58);
-  sp.quadraticCurveTo(1.75, 0.60, 1.75, 0.90);
-  sp.quadraticCurveTo(1.72, 1.18, 1.30, 1.20);
-  sp.lineTo(-0.5, 1.18); sp.lineTo(-0.5, 0.58);
+  sp.moveTo(-0.5, 0.60); sp.lineTo(1.40, 0.60);
+  sp.quadraticCurveTo(1.75,0.62,1.75,0.92);
+  sp.quadraticCurveTo(1.72,1.20,1.30,1.22);
+  sp.lineTo(-0.5,1.20); sp.lineTo(-0.5,0.60);
+  var spg = new THREE.ExtrudeGeometry(sp, { depth:0.06, bevelEnabled:false });
 
-  var spGeo = new THREE.ExtrudeGeometry(sp, { depth: 0.055, bevelEnabled: false });
+  var spA = new THREE.Mesh(spg, mSilvDk); spA.position.set(0,0, 0.72); shoe.add(spA);
+  var spB = new THREE.Mesh(spg, mSilvDk); spB.position.set(0,0,-0.72); spB.scale.z=-1; shoe.add(spB);
 
-  var spA = new THREE.Mesh(spGeo, mSilverDk);
-  spA.position.set(0, 0, 0.717); shoe.add(spA);
-
-  var spB = new THREE.Mesh(spGeo, mSilverDk);
-  spB.position.set(0, 0, -0.717); spB.scale.z = -1; shoe.add(spB);
-
-  /* ════════════════════════════════════
+  /* ══════════════════════════════
      TONGUE
-  ════════════════════════════════════ */
-  var tsh = new THREE.Shape();
-  tsh.moveTo(-0.38, 1.30);
-  tsh.quadraticCurveTo(0, 1.27, 0.38, 1.30);
-  tsh.lineTo(0.32, 2.08);
-  tsh.quadraticCurveTo(0, 2.18, -0.32, 2.08);
-  tsh.lineTo(-0.38, 1.30);
-
-  var tongMesh = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(tsh, { depth: 1.08, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2 }),
-    mBlackSoft
+  ══════════════════════════════ */
+  var ts = new THREE.Shape();
+  ts.moveTo(-0.38,1.31); ts.quadraticCurveTo(0,1.28,0.38,1.31);
+  ts.lineTo(0.32,2.10); ts.quadraticCurveTo(0,2.20,-0.32,2.10); ts.lineTo(-0.38,1.31);
+  var tong = new THREE.Mesh(
+    new THREE.ExtrudeGeometry(ts, { depth:1.09, bevelEnabled:true, bevelThickness:0.03, bevelSize:0.03, bevelSegments:2 }),
+    mBlackS
   );
-  tongMesh.position.set(0, 0, -0.54);
-  tongMesh.castShadow = true; shoe.add(tongMesh);
+  tong.position.set(0,0,-0.545); tong.castShadow=true; shoe.add(tong);
+  add(new THREE.BoxGeometry(0.32,0.18,0.01), mSilver, 0, 1.73, 0.55); /* tongue logo */
 
-  /* tongue label */
-  mesh(new THREE.BoxGeometry(0.32, 0.18, 0.01), mSilver, 0, 1.72, 0.545);
-
-  /* ════════════════════════════════════
+  /* ══════════════════════════════
      LACES
-  ════════════════════════════════════ */
-  for (var l = 0; l < 7; l++) {
-    var lm = new THREE.Mesh(new THREE.CylinderGeometry(0.033, 0.033, 0.72, 8), mLace);
-    lm.rotation.z = Math.PI / 2;
-    lm.position.set(0.82 - l * 0.22, 1.36 + l * 0.025, 0);
+  ══════════════════════════════ */
+  for (var l=0; l<7; l++) {
+    var lm = new THREE.Mesh(new THREE.CylinderGeometry(0.034,0.034,0.74,8), mLace);
+    lm.rotation.z = Math.PI/2;
+    lm.position.set(0.82 - l*0.22, 1.36 + l*0.025, 0);
     shoe.add(lm);
   }
 
-  /* ════════════════════════════════════
+  /* ══════════════════════════════
      EYELETS
-  ════════════════════════════════════ */
-  for (var e = 0; e < 7; e++) {
-    var ex = 0.82 - e * 0.22, ey = 1.36 + e * 0.025;
-    [-0.36, 0.36].forEach(function(ez) {
-      var em = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.018, 8, 12), mEyelet);
-      em.rotation.x = Math.PI / 2;
-      em.position.set(ex, ey, ez);
-      shoe.add(em);
+  ══════════════════════════════ */
+  for (var e=0; e<7; e++) {
+    var ex2=0.82-e*0.22, ey2=1.36+e*0.025;
+    [-0.36,0.36].forEach(function(ez){
+      var em = new THREE.Mesh(new THREE.TorusGeometry(0.056,0.019,8,12), mEyelet);
+      em.rotation.x = Math.PI/2; em.position.set(ex2,ey2,ez); shoe.add(em);
     });
   }
 
-  /* ════════════════════════════════════
+  /* ══════════════════════════════
      HEEL COUNTER
-  ════════════════════════════════════ */
+  ══════════════════════════════ */
   var hp = new THREE.Shape();
-  hp.moveTo(-2.00, 0.42);
-  hp.quadraticCurveTo(-2.06, 0.90, -2.00, 1.30);
-  hp.quadraticCurveTo(-1.92, 1.60, -1.70, 1.68);
-  hp.lineTo(-1.70, 1.44);
-  hp.quadraticCurveTo(-1.84, 1.38, -1.88, 1.12);
-  hp.quadraticCurveTo(-1.94, 0.82, -1.88, 0.42);
-  hp.lineTo(-2.00, 0.42);
+  hp.moveTo(-2.00,0.43); hp.quadraticCurveTo(-2.06,0.91,-2.00,1.31);
+  hp.quadraticCurveTo(-1.92,1.61,-1.70,1.69); hp.lineTo(-1.70,1.45);
+  hp.quadraticCurveTo(-1.84,1.39,-1.88,1.13); hp.quadraticCurveTo(-1.94,0.83,-1.88,0.43);
+  hp.lineTo(-2.00,0.43);
+  var hpm = new THREE.Mesh(new THREE.ExtrudeGeometry(hp, { depth:1.32, bevelEnabled:false }), mSilvDk);
+  hpm.position.set(0,0,-0.66); shoe.add(hpm);
 
-  var hpMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(hp, { depth: 1.32, bevelEnabled: false }), mSilverDk);
-  hpMesh.position.set(0, 0, -0.66); shoe.add(hpMesh);
+  add(new THREE.BoxGeometry(0.16,0.34,0.08), mSilver, -1.84, 1.91, 0); /* pull tab */
+  add(new THREE.BoxGeometry(0.10,0.08,0.10), mSilvDk, -1.84, 1.74, 0);
 
-  /* heel pull tab */
-  mesh(new THREE.BoxGeometry(0.16, 0.32, 0.07), mSilver, -1.84, 1.90, 0);
-  mesh(new THREE.BoxGeometry(0.10, 0.08, 0.09), mSilverDk, -1.84, 1.74, 0);
+  /* ankle collar */
+  var col = new THREE.Mesh(new THREE.TorusGeometry(0.38,0.10,8,24,Math.PI*1.15), mBlackS);
+  col.position.set(-0.62,1.79,0); col.rotation.y=-0.35; col.rotation.z=-1.2; shoe.add(col);
 
-  /* ════════════════════════════════════
-     ANKLE COLLAR PADDING
-  ════════════════════════════════════ */
-  var collar = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.10, 8, 24, Math.PI * 1.15), mBlackSoft);
-  collar.position.set(-0.62, 1.78, 0);
-  collar.rotation.y = -0.35; collar.rotation.z = -1.2;
-  shoe.add(collar);
-
-  /* ════════════════════════════════════
-     JORDAN WINGS LOGO AREA (embossed panels)
-  ════════════════════════════════════ */
-  mesh(new THREE.BoxGeometry(0.55, 0.14, 0.01), mSilverDk,  1.1, 0.95,  0.76);
-  mesh(new THREE.BoxGeometry(0.55, 0.14, 0.01), mSilverDk,  1.1, 0.95, -0.77);
+  /* wings emboss panels */
+  add(new THREE.BoxGeometry(0.55,0.14,0.012), mSilvDk,  1.1, 0.96,  0.77);
+  add(new THREE.BoxGeometry(0.55,0.14,0.012), mSilvDk,  1.1, 0.96, -0.78);
 
   /* ── position whole shoe ── */
   shoe.position.set(0, -0.1, 0);
-  shoe.rotation.y = 0.4; /* start at slight angle so Jordan 12 profile is clear */
+  shoe.rotation.y = 0.5;
 
-  /* ── resize ── */
-  function onResize() {
-    var cw = canvas.parentElement ? canvas.parentElement.clientWidth : W;
-    var newW = Math.min(cw, 680), newH = 420;
-    if (window.innerWidth < 640) newH = 300;
-    camera.aspect = newW / newH;
-    camera.updateProjectionMatrix();
-    renderer.setSize(newW, newH);
-  }
-  window.addEventListener('resize', onResize);
-  onResize();
+  /* ── DRAG TO ROTATE ── */
+  var dragging=false, prevX=0, rotY=0.5, autoSpin=true;
+  canvas.addEventListener('mousedown',  function(e){ dragging=true;  prevX=e.clientX; autoSpin=false; });
+  window.addEventListener('mouseup',    function() { dragging=false; setTimeout(function(){ autoSpin=true; },2500); });
+  window.addEventListener('mousemove',  function(e){ if(dragging){ rotY+=(e.clientX-prevX)*0.012; prevX=e.clientX; }});
+  canvas.addEventListener('touchstart', function(e){ dragging=true;  prevX=e.touches[0].clientX; autoSpin=false; },{passive:true});
+  window.addEventListener('touchend',   function() { dragging=false; setTimeout(function(){ autoSpin=true; },2500); });
+  window.addEventListener('touchmove',  function(e){ if(dragging){ rotY+=(e.touches[0].clientX-prevX)*0.012; prevX=e.touches[0].clientX; }},{passive:true});
 
-  /* ── drag to rotate ── */
-  var dragging = false, prevX = 0, rotY = 0.4, autoSpin = true;
-
-  canvas.addEventListener('mousedown',  function(e){ dragging = true;  prevX = e.clientX; autoSpin = false; });
-  window.addEventListener('mouseup',    function() { dragging = false; setTimeout(function(){ autoSpin = true; }, 2500); });
-  window.addEventListener('mousemove',  function(e){ if(dragging){ rotY += (e.clientX - prevX)*0.012; prevX = e.clientX; } });
-
-  canvas.addEventListener('touchstart', function(e){ dragging = true;  prevX = e.touches[0].clientX; autoSpin = false; }, {passive:true});
-  window.addEventListener('touchend',   function() { dragging = false; setTimeout(function(){ autoSpin = true; }, 2500); });
-  window.addEventListener('touchmove',  function(e){ if(dragging){ rotY += (e.touches[0].clientX - prevX)*0.012; prevX = e.touches[0].clientX; } }, {passive:true});
-
-  /* ── animate ── */
-  var clk = 0;
+  /* ── ANIMATE ── */
+  var clk=0;
   function animate() {
     requestAnimationFrame(animate);
     clk += 0.007;
     if (autoSpin) rotY += 0.007;
     shoe.rotation.y    = rotY;
-    shoe.position.y    = -0.1 + Math.sin(clk * 0.75) * 0.045;
-    disc.material.opacity = 0.045 + Math.sin(clk * 0.75) * 0.025;
+    shoe.position.y    = -0.1 + Math.sin(clk*0.75)*0.045;
+    ring.material.opacity = 0.08 + Math.sin(clk*0.75)*0.04;
     renderer.render(scene, camera);
   }
   animate();
