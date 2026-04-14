@@ -1356,11 +1356,11 @@ window.addEventListener('load', function() {
 
   /* ── LIGHTS — dramatic product-shoot: hard key + cyan rim ── */
   // Minimal ambient — black leather stays black in shadows
-  scene.add(new THREE.AmbientLight(0x112233, 0.60));  // very dark blue-black
+  scene.add(new THREE.AmbientLight(0x1a2a3a, 0.80));  // dark blue ambient - reveals shape without washing out
 
   // KEY — hard white from upper-right-front, casts real shadows
-  var key = new THREE.DirectionalLight(0xffffff, 3.8);
-  key.position.set(8, 14, 10);
+  var key = new THREE.DirectionalLight(0xffffff, 2.4);
+  key.position.set(14, 10, 3);
   key.castShadow = true;
   key.shadow.mapSize.setScalar(2048);
   key.shadow.camera.near = 1; key.shadow.camera.far  = 30;
@@ -1369,8 +1369,8 @@ window.addEventListener('load', function() {
   scene.add(key);
 
   // CYAN RIM — strong from upper-left-behind (Active Theory aesthetic edge pop)
-  var rim = new THREE.DirectionalLight(0x00e5ff, 4.5);
-  rim.position.set(-8, 10, -12); scene.add(rim);
+  var rim = new THREE.DirectionalLight(0x00e5ff, 5.0);
+  rim.position.set(-10, 8, -14); scene.add(rim);
 
   // Subtle under-fill — just enough to read the icy outsole from below
   var bot = new THREE.DirectionalLight(0x88aacc, 0.4);
