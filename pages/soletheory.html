@@ -1354,13 +1354,13 @@ window.addEventListener('load', function() {
   camera.position.set(0, 1.6, 9.5);
   camera.lookAt(0, 0.6, 0);
 
-  /* ── LIGHTS — studio-quality for black leather ── */
-  // Strong ambient so black leather is visible
-  scene.add(new THREE.AmbientLight(0xffffff, 0.20));
+  /* ── LIGHTS — dramatic product-shoot: hard key + cyan rim ── */
+  // Minimal ambient — black leather stays black in shadows
+  scene.add(new THREE.AmbientLight(0x112233, 0.60));  // very dark blue-black
 
-  // Key light — warm white, upper right front
-  var key = new THREE.DirectionalLight(0xfff6ee, 1.8);
-  key.position.set(6, 12, 8);
+  // KEY — hard white from upper-right-front, casts real shadows
+  var key = new THREE.DirectionalLight(0xffffff, 3.8);
+  key.position.set(8, 14, 10);
   key.castShadow = true;
   key.shadow.mapSize.setScalar(2048);
   key.shadow.camera.near = 1; key.shadow.camera.far  = 30;
@@ -1368,21 +1368,17 @@ window.addEventListener('load', function() {
   key.shadow.camera.top  =  8; key.shadow.camera.bottom = -8;
   scene.add(key);
 
-  // Fill from left — cool blue
-  var fill = new THREE.DirectionalLight(0xc0d8ff, 0.7);
-  fill.position.set(-10, 6, 6); scene.add(fill);
+  // CYAN RIM — strong from upper-left-behind (Active Theory aesthetic edge pop)
+  var rim = new THREE.DirectionalLight(0x00e5ff, 4.5);
+  rim.position.set(-8, 10, -12); scene.add(rim);
 
-  // Cyan rim from behind — Active Theory aesthetic
-  var rim = new THREE.DirectionalLight(0x00e5ff, 3.2);
-  rim.position.set(-4, 8, -12); scene.add(rim);
+  // Subtle under-fill — just enough to read the icy outsole from below
+  var bot = new THREE.DirectionalLight(0x88aacc, 0.4);
+  bot.position.set(0, -8, 6); scene.add(bot);
 
-  // Bottom fill — lights the outsole from below
-  var bot = new THREE.DirectionalLight(0xffffff, 0.5);
-  bot.position.set(0, -10, 5); scene.add(bot);
-
-  // Point light — strong specular highlights on the silver
-  var pt = new THREE.PointLight(0xffffff, 1.5, 16);
-  pt.position.set(3, 5, 6); scene.add(pt);
+  // Tight point — strong specular pop on silver midsole stripe
+  var pt = new THREE.PointLight(0xffffff, 2.8, 12);
+  pt.position.set(4, 4, 7); scene.add(pt);
 
   /* ground shadow */
   var shadow = new THREE.Mesh(
