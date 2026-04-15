@@ -958,49 +958,71 @@
     background: linear-gradient(to top, rgba(255,255,255,0.025), transparent);
     pointer-events: none;
   }
-  /* ── SHOE TAG LABEL ── */
+  /* ── JORDAN TONGUE LABEL ── */
   #shoe-tag {
     position: relative; z-index: 2;
-    background: #f2ede0; color: #111;
-    border-radius: 3px; padding: 13px 16px;
+    background: #fff; color: #111;
+    border-radius: 2px;
+    padding: 12px 14px 10px;
     font-family: Arial, Helvetica, sans-serif;
     text-align: left; width: 100%;
-    border: 1px solid #d8d0be;
-    box-shadow:
-      0 4px 18px rgba(0,0,0,0.7),
-      0 1px 3px rgba(0,0,0,0.4);
-    /* slight perspective tilt like a real tongue tag */
-    transform: perspective(400px) rotateX(4deg);
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.75), 0 1px 4px rgba(0,0,0,0.4);
+    transform: perspective(500px) rotateX(3deg);
     transform-origin: top center;
   }
-  #shoe-tag .tag-top {
+  /* Row 1: US + Jumpman + style */
+  .tg-row1 {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .tg-us-block { line-height: 1; }
+  .tg-us-label {
+    display: block; font-size: 9px; font-weight: bold;
+    color: #111; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .tg-us-num {
+    display: block; font-size: 30px; font-weight: 900;
+    color: #000; line-height: 1; letter-spacing: -1px;
+  }
+  .tg-jumpman { line-height: 1; }
+  .tg-style-block { text-align: right; }
+  .tg-lnm {
+    display: block; font-size: 8px; font-weight: bold;
+    color: #111; letter-spacing: 1px;
+  }
+  .tg-style {
+    display: block; font-size: 8px; color: #333;
+    letter-spacing: 0.5px;
+  }
+  /* Divider */
+  .tg-divider {
+    border: none; border-top: 1px solid #bbb;
+    margin: 6px 0;
+  }
+  /* Size rows */
+  .tg-row2 {
     display: flex; justify-content: space-between;
-    align-items: flex-start; margin-bottom: 6px;
+    font-size: 9px; color: #111; line-height: 1.8;
   }
-  #shoe-tag .tag-us {
-    font-size: 11px; font-weight: bold; line-height: 1.1;
-    color: #222; letter-spacing: 0;
-  }
-  #shoe-tag .tag-us .us-num {
-    font-size: 28px; font-weight: 900; display: block;
-    line-height: 1; color: #111;
-  }
-  #shoe-tag .tag-jumpman { line-height: 1; }
-  #shoe-tag .tag-right {
-    text-align: right; font-size: 9px; color: #444;
-    line-height: 1.5;
-  }
-  #shoe-tag .tag-row {
+  .tg-cell { font-size: 9px; color: #111; }
+  .tg-cell b { font-weight: bold; }
+  .tg-right { text-align: right; }
+  /* Meta/dates */
+  .tg-meta {
     display: flex; justify-content: space-between;
-    font-size: 9px; color: #333; border-top: 1px solid #c8c0ae;
-    padding-top: 5px; margin-top: 5px; line-height: 1.8;
+    font-size: 7.5px; color: #444; line-height: 1.7;
+    margin-top: 2px;
   }
-  #shoe-tag .tag-row span { display: block; }
-  #shoe-tag .tag-meta {
-    margin-top: 6px; border-top: 1px solid #c8c0ae; padding-top: 5px;
-    font-size: 7.5px; color: #555; line-height: 1.7; letter-spacing: 0;
+  .tg-upc { font-size: 7px; color: #666; }
+  /* Country */
+  .tg-country {
+    font-size: 6.5px; color: #555; text-align: center;
+    margin-top: 5px; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-top: 1px solid #ddd; padding-top: 5px;
   }
-  #shoe-tag .tag-upc { font-size: 7px; color: #777; margin-top: 2px; }
   @media (max-width: 640px) {
     #sketchfab-wrap { height: 320px; }
     #shoe-price { font-size: 28px; }
@@ -1106,43 +1128,54 @@
     <div id="shoe-outer">
     <div id="shoe-cavity">
     <div id="shoe-tag">
-      <div class="tag-top">
-        <div class="tag-us">
-          US
-          <span class="tag-us-num">13</span>
+
+      <!-- Row 1: US size + Jumpman + LNM/style -->
+      <div class="tg-row1">
+        <div class="tg-us-block">
+          <span class="tg-us-label">US</span>
+          <span class="tg-us-num">13</span>
         </div>
-        <!-- Jumpman silhouette SVG -->
-        <div class="tag-jumpman">
-          <svg width="28" height="32" viewBox="0 0 100 120" fill="#111" xmlns="http://www.w3.org/2000/svg">
-            <!-- simplified jumpman path -->
+        <div class="tg-jumpman">
+          <svg width="26" height="30" viewBox="0 0 100 120" fill="#111" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="62" cy="12" rx="10" ry="10"/>
             <path d="M55 22 Q40 30 30 50 Q20 65 10 75 Q20 78 28 72 Q35 60 45 52 L50 70 Q42 85 38 100 L50 102 Q56 88 62 72 L75 88 Q80 80 78 72 L65 55 L70 38 Q80 48 88 42 Q82 30 70 25 Z"/>
             <path d="M28 72 Q15 80 5 90 Q12 95 22 88 Q30 80 38 70 Z"/>
           </svg>
         </div>
-        <div class="tag-right">
-          LNM<br>
-          DH6927-161
+        <div class="tg-style-block">
+          <span class="tg-lnm">LNM</span>
+          <span class="tg-style">DH6927-161</span>
         </div>
       </div>
-      <div class="tag-row">
-        <div>
-          <span>UK 12</span>
-          <span>DH6927-161</span>
-        </div>
-        <div style="text-align:right">
-          <span>EUR 47.5</span>
-          <span>SM 31</span>
-        </div>
+
+      <div class="tg-divider"></div>
+
+      <!-- Row 2: UK / EUR -->
+      <div class="tg-row2">
+        <span class="tg-cell"><b>UK</b> 11</span>
+        <span class="tg-cell tg-right"><b>EUR</b> 47.5</span>
       </div>
-      <div class="tag-row">
-        <div><span>BR 45</span></div>
-        <div style="text-align:right"><span>CN 305</span></div>
+      <!-- Row 3: SM / BR -->
+      <div class="tg-row2">
+        <span class="tg-cell"><b>SM</b> 31</span>
+        <span class="tg-cell tg-right"><b>BR</b> 45</span>
       </div>
-      <div class="tag-meta">
-        04/04/23 &nbsp;|&nbsp; 09/27/23<br>
-        <span class="tag-upc">UPC 00196608223450</span>
+      <!-- Row 4: CN -->
+      <div class="tg-row2">
+        <span class="tg-cell"><b>CN</b> 305</span>
       </div>
+
+      <div class="tg-divider"></div>
+
+      <!-- Dates + UPC -->
+      <div class="tg-meta">
+        <span>04/04/23 &nbsp;|&nbsp; 09/27/23</span>
+        <span class="tg-upc">UPC 00196608223450</span>
+      </div>
+
+      <!-- Country -->
+      <div class="tg-country">MADE IN CHINA / FABRIQUE EN CHINE</div>
+
     </div>
     </div><!-- /shoe-cavity -->
     </div><!-- /shoe-outer -->
