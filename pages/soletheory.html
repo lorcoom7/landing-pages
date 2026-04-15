@@ -809,6 +809,29 @@
     text-decoration: none; transition: background 0.3s, color 0.3s;
   }
   #shoe-cta:hover { background: #fff; color: #000; }
+  #size-label {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 4px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 10px;
+  }
+  #size-grid {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 8px; margin-bottom: 8px;
+  }
+  .size-chip {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+    padding: 6px 12px; border: 1px solid #333; color: #666;
+    cursor: default; border-radius: 2px; transition: border-color 0.2s, color 0.2s;
+    user-select: none;
+  }
+  .size-chip.active {
+    border-color: var(--accent); color: var(--accent);
+    box-shadow: 0 0 8px rgba(0,255,255,0.15);
+  }
+  #insole-note {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 3px;
+    color: var(--muted); margin-bottom: 20px;
+  }
+  #insole-note span { color: var(--accent); }
   #showcase-hint {
     margin-top: 16px; font-size: 8px; letter-spacing: 3px;
     text-transform: uppercase; color: rgba(255,255,255,0.18);
@@ -876,6 +899,17 @@
     <h2 id="shoe-name">Jordan 12 Retro Barons</h2>
     <p id="shoe-model">CT8013-010 &nbsp;&middot;&nbsp; Men's</p>
     <p id="shoe-price">$190.00</p>
+    <p id="size-label">Size &mdash; Men's US</p>
+    <div id="size-grid">
+      <span class="size-chip">8</span>
+      <span class="size-chip">9</span>
+      <span class="size-chip">10</span>
+      <span class="size-chip">10.5</span>
+      <span class="size-chip">11</span>
+      <span class="size-chip">12</span>
+      <span class="size-chip active">13</span>
+    </div>
+    <p id="insole-note">&#10003; Insole included &nbsp;&middot;&nbsp; Size <span>US 13</span></p>
     <a href="#" id="shoe-cta">Shop Now &#x2192;</a>
     <p id="showcase-hint">Drag &amp; scroll to explore · Powered by Sketchfab</p>
   </div>
