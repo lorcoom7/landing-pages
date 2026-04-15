@@ -764,13 +764,18 @@
     text-transform: uppercase; color: var(--accent); opacity: 0.8;
     margin-bottom: 12px;
   }
+  #sketchfab-wrap {
+    width: 100%; max-width: 720px;
+    height: 480px;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
   #shoe-canvas {
     display: block;
-    width: 100%; max-width: 680px;
-    height: 420px;
-    cursor: grab;
+    width: 100%; height: 100%;
+    border: none;
   }
-  #shoe-canvas:active { cursor: grabbing; }
   #showcase-info {
     text-align: center; margin-top: 24px; position: relative; z-index: 2;
   }
@@ -800,7 +805,7 @@
     text-transform: uppercase; color: rgba(255,255,255,0.18);
   }
   @media (max-width: 640px) {
-    #shoe-canvas { height: 300px; }
+    #sketchfab-wrap { height: 320px; }
     #shoe-price { font-size: 28px; }
   }
 </style>
@@ -846,13 +851,24 @@
 ============================================================ -->
 <section id="showcase">
   <p id="showcase-tag">// Top Seller &nbsp;&#9679;&nbsp; SS26</p>
-  <canvas id="shoe-canvas" width="680" height="420"></canvas>
+  <div id="sketchfab-wrap">
+  <iframe
+    id="shoe-canvas"
+    title="Jordan 12 Retro Barons"
+    frameborder="0"
+    allowfullscreen
+    mozallowfullscreen="true"
+    webkitallowfullscreen="true"
+    allow="autoplay; fullscreen; xr-spatial-tracking"
+    src="https://sketchfab.com/models/142ad15c39ad49bcb7bc7353349bd26a/embed?autostart=1&preload=1&autospin=0.3&ui_infos=0&ui_controls=0&ui_stop=0&transparent=0&camera=0">
+  </iframe>
+</div>
   <div id="showcase-info">
     <h2 id="shoe-name">Jordan 12 Retro Barons</h2>
     <p id="shoe-model">CT8013-010 &nbsp;&middot;&nbsp; Men's</p>
     <p id="shoe-price">$190.00</p>
     <a href="#" id="shoe-cta">Shop Now &#x2192;</a>
-    <p id="showcase-hint">Drag to rotate</p>
+    <p id="showcase-hint">Drag &amp; scroll to explore · Powered by Sketchfab</p>
   </div>
 </section>
 
@@ -1328,351 +1344,6 @@
 })();
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-window.addEventListener('load', function() {
-  var canvas = document.getElementById('shoe-canvas');
-  if (!canvas) { console.error('no canvas'); return; }
-  if (typeof THREE === 'undefined') { console.error('THREE not loaded'); return; }
-
-  var W = 680, H = 420;
-
-  /* ── RENDERER — opaque black background so shoe is always visible ── */
-  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-  renderer.setClearColor(0x000000, 1);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(W, H, false);   /* false = don't touch CSS */
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
-  renderer.outputEncoding    = THREE.sRGBEncoding;
-  renderer.toneMapping       = THREE.LinearToneMapping;
-  renderer.toneMappingExposure = 0.95;
-
-  /* ── SCENE / CAMERA ── */
-  var scene  = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(36, W / H, 0.1, 100);
-  camera.position.set(0.5, 1.8, 7.2);
-  camera.lookAt(0, 0.6, 0);
-
-  /* ── LIGHTS — edge-only product shoot for black leather ── */
-  // Dark blue ambient — gives just enough light to read the form
-  scene.add(new THREE.AmbientLight(0x1a2535, 1.20));
-
-  // CYAN BACK-RIM — the primary light, wraps around the silhouette
-  var rim = new THREE.DirectionalLight(0x00e5ff, 6.0);
-  rim.position.set(-10, 8, -14); scene.add(rim);
-
-  // Second rim from upper-right — white, creates the other edge
-  var rim2 = new THREE.DirectionalLight(0xffffff, 1.8);
-  rim2.position.set(12, 10, -6); scene.add(rim2);
-
-  // Tight front point — illuminates silver details + icy outsole only
-  var pt = new THREE.PointLight(0xffffff, 1.8, 10);
-  pt.position.set(3, 2, 8); scene.add(pt);
-  pt.castShadow = true;
-  pt.shadow.mapSize.setScalar(1024);
-
-  // Under-light for the translucent outsole
-  var bot = new THREE.DirectionalLight(0x6699bb, 0.6);
-  bot.position.set(0, -8, 5); scene.add(bot);
-
-  /* ground shadow */
-  var shadow = new THREE.Mesh(
-    new THREE.PlaneGeometry(14,14),
-    new THREE.ShadowMaterial({ opacity:0.38 })
-  );
-  shadow.rotation.x = -Math.PI/2;
-  shadow.position.y = -1.20;
-  shadow.receiveShadow = true;
-  scene.add(shadow);
-
-  /* cyan glow ring */
-  var ring = new THREE.Mesh(
-    new THREE.RingGeometry(1.9, 2.35, 64),
-    new THREE.MeshBasicMaterial({ color:0x00e5ff, transparent:true, opacity:0.10, side:THREE.DoubleSide })
-  );
-  ring.rotation.x = -Math.PI/2;
-  ring.position.y = -1.19;
-  scene.add(ring);
-
-  /* ───────────────────────────────────────────────────────
-     MATERIALS  — Jordan 12 Retro Barons  CT8013-010
-     MeshBasicMaterial for all dark parts = lighting has ZERO effect,
-     color is ALWAYS exactly what you set. Silver/icy use Standard.
-  ─────────────────────────────────────────────────────── */
-  var mLeather = new THREE.MeshBasicMaterial({color:0x2c2c2c});   // black leather upper — always this shade
-  var mLeatherD= new THREE.MeshBasicMaterial({color:0x1a1a1a});   // darker leather — midsole/heel/toe
-  var mSilver  = new THREE.MeshStandardMaterial({color:0xeeeeee, roughness:0.06, metalness:0.99});   // bright metallic silver
-  var mSilvDk  = new THREE.MeshStandardMaterial({color:0xb8b8b8, roughness:0.18, metalness:0.92});   // dark silver
-  var mCarbon  = new THREE.MeshBasicMaterial({color:0x181818});   // carbon fibre panel
-  var mCarbonH = new THREE.MeshBasicMaterial({color:0x232323});   // lighter carbon highlight
-  var mIcy     = new THREE.MeshStandardMaterial({color:0xaad0e8, roughness:0.02, metalness:0.04, transparent:true, opacity:0.75}); // icy outsole
-  var mRubber  = new THREE.MeshBasicMaterial({color:0x0c0c0c});   // tread rubber
-  var mLace    = new THREE.MeshBasicMaterial({color:0x1e1e1e});   // black laces
-  var mEyelet  = new THREE.MeshStandardMaterial({color:0xf8f8f8, roughness:0.04, metalness:1.0});    // silver eyelets
-  var mPad     = new THREE.MeshBasicMaterial({color:0x1e1e1e});   // collar padding
-
-  /* ── SHOE GROUP ── */
-  var shoe = new THREE.Group();
-  scene.add(shoe);
-
-  function add(geo, mat, x, y, z, rx, ry, rz) {
-    var m = new THREE.Mesh(geo, mat);
-    m.position.set(x||0, y||0, z||0);
-    if(rx) m.rotation.x=rx; if(ry) m.rotation.y=ry; if(rz) m.rotation.z=rz;
-    m.castShadow=true; m.receiveShadow=true; shoe.add(m); return m;
-  }
-
-  /* ═══════════════════════════════════════════════════════
-     1. OUTSOLE — Icy translucent (the most iconic J12 feature)
-        Laid in the X-Z plane; Y=0 is the ground-contact face.
-  ═══════════════════════════════════════════════════════ */
-  // Main box
-  add(new THREE.BoxGeometry(3.90, 0.17, 1.48), mIcy, 0, 0.085, 0);
-  // Toe half-cylinder
-  var tcG = new THREE.CylinderGeometry(0.74, 0.74, 0.17, 32, 1, false, 0, Math.PI);
-  var tcM = new THREE.Mesh(tcG, mIcy);
-  tcM.rotation.y = -Math.PI/2; tcM.position.set(1.95, 0.085, 0); tcM.castShadow=true; shoe.add(tcM);
-  // Heel half-cylinder
-  var hcG2 = new THREE.CylinderGeometry(0.74, 0.74, 0.17, 32, 1, false, Math.PI, Math.PI);
-  var hcM2 = new THREE.Mesh(hcG2, mIcy);
-  hcM2.rotation.y = -Math.PI/2; hcM2.position.set(-1.95, 0.085, 0); hcM2.castShadow=true; shoe.add(hcM2);
-  // Herringbone tread
-  for (var t=0; t<17; t++) {
-    var ang = (t%2===0) ? 0.33 : -0.33;
-    var tb = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.19, 1.28), mRubber);
-    tb.rotation.y=ang; tb.position.set(-1.92+t*0.24, 0.01, 0); shoe.add(tb);
-  }
-
-  /* ═══════════════════════════════════════════════════════
-     2. MIDSOLE — Black leather + silver accent lines
-  ═══════════════════════════════════════════════════════ */
-  add(new THREE.BoxGeometry(3.76, 0.32, 1.36), mLeatherD, 0, 0.335, 0);
-  // Toe / heel end caps
-  var msToeG = new THREE.CylinderGeometry(0.68, 0.68, 0.32, 32, 1, false, 0, Math.PI);
-  var msToeM2 = new THREE.Mesh(msToeG, mLeatherD);
-  msToeM2.rotation.y=-Math.PI/2; msToeM2.position.set(1.88, 0.335, 0); shoe.add(msToeM2);
-  var msHlG = new THREE.CylinderGeometry(0.68, 0.68, 0.32, 32, 1, false, Math.PI, Math.PI);
-  var msHlM = new THREE.Mesh(msHlG, mLeatherD);
-  msHlM.rotation.y=-Math.PI/2; msHlM.position.set(-1.88, 0.335, 0); shoe.add(msHlM);
-  // Silver top edge of midsole (iconic J12 silver midsole stripe)
-  add(new THREE.BoxGeometry(3.78, 0.055, 1.38), mSilver, 0, 0.502, 0);
-  // Carbon plate strip (visible mid-midsole)
-  add(new THREE.BoxGeometry(3.60, 0.040, 1.22), mCarbon, 0, 0.415, 0);
-
-  /* ═══════════════════════════════════════════════════════
-     3. UPPER MAIN BODY — Jordan 12 silhouette profile
-        Shape defined in X-Y plane, extruded along +Z
-  ═══════════════════════════════════════════════════════ */
-  var p = new THREE.Shape();
-
-  // Heel bottom-left — start here and go clockwise
-  p.moveTo(-1.96, 0.52);
-
-  // Heel counter — tall and prominent (most distinctive J12 rear feature)
-  p.quadraticCurveTo(-2.15, 0.52, -2.20, 0.75);
-  p.quadraticCurveTo(-2.28, 1.05, -2.26, 1.42);
-  p.quadraticCurveTo(-2.22, 1.75, -2.10, 1.98);
-  p.quadraticCurveTo(-1.95, 2.16, -1.72, 2.22);
-
-  // Collar top — rides high at the back (J12 has high collar peak)
-  p.quadraticCurveTo(-1.52, 2.24, -1.38, 2.20);
-  p.quadraticCurveTo(-1.20, 2.16, -1.05, 2.05);
-
-  // Ankle collar opens — dips toward the front (the characteristic J12 collar shape)
-  p.quadraticCurveTo(-0.90, 1.96, -0.78, 1.82);
-  p.quadraticCurveTo(-0.65, 1.68, -0.52, 1.52);
-  p.quadraticCurveTo(-0.40, 1.38, -0.30, 1.28);
-
-  // Throat / lace area — relatively flat
-  p.quadraticCurveTo(-0.05, 1.22,  0.35, 1.20);
-  p.quadraticCurveTo( 0.75, 1.18,  1.20, 1.16);
-
-  // Toe box top — stays fairly flat on J12 (not very pointed)
-  p.quadraticCurveTo( 1.60, 1.14,  1.85, 1.10);
-  p.quadraticCurveTo( 2.05, 1.06,  2.12, 0.92);
-
-  // Toe front — slightly squared (J12 toe box is chunky, not tapered)
-  p.quadraticCurveTo( 2.18, 0.78,  2.18, 0.64);
-  p.quadraticCurveTo( 2.16, 0.52,  2.00, 0.52);
-
-  // Bottom — straight line back to heel
-  p.lineTo(-1.96, 0.52);
-
-  var extUpper = { depth:1.36, bevelEnabled:true, bevelThickness:0.065, bevelSize:0.065, bevelSegments:5, steps:3 };
-  var um = new THREE.Mesh(new THREE.ExtrudeGeometry(p, extUpper), mLeather);
-  um.position.set(0, 0, -0.68); um.castShadow=true; um.receiveShadow=true; shoe.add(um);
-
-  /* ═══════════════════════════════════════════════════════
-     4. CARBON FIBRE SIDE PANELS — THE most iconic J12 feature
-        Lateral (outside, +Z) and medial (inside, -Z) overlays
-  ═══════════════════════════════════════════════════════ */
-  // Lower carbon panel — runs toe to midfoot along bottom of upper
-  var cp1 = new THREE.Shape();
-  cp1.moveTo(-0.40, 0.53); cp1.lineTo(1.72, 0.53);
-  cp1.quadraticCurveTo(1.98, 0.53, 2.00, 0.70);
-  cp1.quadraticCurveTo(2.00, 0.88, 1.82, 0.96);
-  cp1.lineTo(-0.40, 0.96);
-  cp1.quadraticCurveTo(-0.62, 0.96, -0.62, 0.74);
-  cp1.quadraticCurveTo(-0.62, 0.53, -0.40, 0.53);
-  var cp1G = new THREE.ExtrudeGeometry(cp1, {depth:0.060, bevelEnabled:false});
-  // Lateral side (outside)
-  var cp1L = new THREE.Mesh(cp1G, mCarbon); cp1L.position.set(0,0,0.74); shoe.add(cp1L);
-  // Medial side (inside, mirrored)
-  var cp1R = new THREE.Mesh(cp1G, mSilvDk); cp1R.position.set(0,0,-0.74); cp1R.scale.z=-1; shoe.add(cp1R);
-
-  // Upper carbon panel — sits just above the lower panel
-  var cp2 = new THREE.Shape();
-  cp2.moveTo(-0.35, 0.98); cp2.lineTo(1.68, 0.98);
-  cp2.quadraticCurveTo(1.90, 0.98, 1.90, 1.11);
-  cp2.quadraticCurveTo(1.88, 1.22, 1.60, 1.24);
-  cp2.lineTo(-0.35, 1.24);
-  cp2.quadraticCurveTo(-0.56, 1.24, -0.56, 1.11);
-  cp2.quadraticCurveTo(-0.56, 0.98, -0.35, 0.98);
-  var cp2G = new THREE.ExtrudeGeometry(cp2, {depth:0.055, bevelEnabled:false});
-  var cp2L = new THREE.Mesh(cp2G, mCarbonH); cp2L.position.set(0,0,0.74); shoe.add(cp2L);
-  var cp2R = new THREE.Mesh(cp2G, mSilvDk);  cp2R.position.set(0,0,-0.74); cp2R.scale.z=-1; shoe.add(cp2R);
-
-  // Diagonal accent bars on carbon panel (the cross-hatch / zig-zag look)
-  for (var d=0; d<6; d++) {
-    var dx = -0.05 + d*0.36;
-    var dBar = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.56, 0.065), mSilvDk);
-    dBar.rotation.z = 0.24; // slight lean
-    dBar.position.set(dx, 0.72, 0.80); shoe.add(dBar);
-  }
-
-  // Silver border line between panels (J12 has a metallic groove here)
-  add(new THREE.BoxGeometry(2.42, 0.038, 0.062), mSilver, 0.60, 0.970, 0.77);
-  add(new THREE.BoxGeometry(2.42, 0.038, 0.062), mSilver, 0.60, 0.970, -0.78);
-
-  /* ═══════════════════════════════════════════════════════
-     5. HEEL COUNTER OVERLAY — very prominent on J12
-  ═══════════════════════════════════════════════════════ */
-  var hco = new THREE.Shape();
-  hco.moveTo(-2.24, 0.55);
-  hco.quadraticCurveTo(-2.32, 0.82, -2.30, 1.22);
-  hco.quadraticCurveTo(-2.26, 1.62, -2.12, 1.90);
-  hco.quadraticCurveTo(-1.96, 2.14, -1.76, 2.18);
-  hco.lineTo(-1.76, 1.98);
-  hco.quadraticCurveTo(-1.90, 1.94, -2.02, 1.72);
-  hco.quadraticCurveTo(-2.12, 1.50, -2.14, 1.18);
-  hco.quadraticCurveTo(-2.16, 0.84, -2.10, 0.55);
-  hco.lineTo(-2.24, 0.55);
-
-  var hcoG = new THREE.ExtrudeGeometry(hco, {depth:1.36, bevelEnabled:false});
-  var hcoM = new THREE.Mesh(hcoG, mCarbon);
-  hcoM.position.set(0,0,-0.68); shoe.add(hcoM);
-
-  // Silver accent on heel counter
-  var hcoAcc = new THREE.Shape();
-  hcoAcc.moveTo(-2.14, 0.62);
-  hcoAcc.quadraticCurveTo(-2.18, 0.86, -2.16, 1.18);
-  hcoAcc.quadraticCurveTo(-2.12, 1.50, -2.00, 1.70);
-  hcoAcc.lineTo(-1.95, 1.60);
-  hcoAcc.quadraticCurveTo(-2.04, 1.40, -2.07, 1.12);
-  hcoAcc.quadraticCurveTo(-2.09, 0.83, -2.05, 0.62);
-  hcoAcc.lineTo(-2.14, 0.62);
-  var hcoAccG = new THREE.ExtrudeGeometry(hcoAcc, {depth:1.38, bevelEnabled:false});
-  var hcoAccM = new THREE.Mesh(hcoAccG, mSilvDk);
-  hcoAccM.position.set(0,0,-0.69); shoe.add(hcoAccM);
-
-  // Heel pull tab (the loop at the top back)
-  add(new THREE.BoxGeometry(0.13, 0.38, 0.09), mSilver, -2.22, 2.02, 0);
-  add(new THREE.BoxGeometry(0.08, 0.08, 0.09), mCarbon, -2.22, 1.83, 0);
-
-  /* ═══════════════════════════════════════════════════════
-     6. TOE CAP — slightly raised overlay on the toe box
-  ═══════════════════════════════════════════════════════ */
-  var tcp2 = new THREE.Shape();
-  tcp2.moveTo(0.90, 0.53); tcp2.lineTo(1.85, 0.53);
-  tcp2.quadraticCurveTo(2.10, 0.53, 2.14, 0.75);
-  tcp2.quadraticCurveTo(2.14, 0.94, 2.00, 1.02);
-  tcp2.quadraticCurveTo(1.72, 1.08, 1.20, 1.09);
-  tcp2.lineTo(0.90, 1.09);
-  tcp2.lineTo(0.90, 0.53);
-  var tcpG2 = new THREE.ExtrudeGeometry(tcp2, {depth:1.38, bevelEnabled:true, bevelThickness:0.03, bevelSize:0.03, bevelSegments:3});
-  var tcpM2 = new THREE.Mesh(tcpG2, mLeatherD);
-  tcpM2.position.set(0,0,-0.69); shoe.add(tcpM2);
-
-  /* ═══════════════════════════════════════════════════════
-     7. TONGUE — puffy, with Jordan branding
-  ═══════════════════════════════════════════════════════ */
-  var ts = new THREE.Shape();
-  ts.moveTo(-0.42, 1.18); ts.quadraticCurveTo(0, 1.14, 0.42, 1.18);
-  ts.lineTo(0.36, 2.12);  ts.quadraticCurveTo(0, 2.22, -0.36, 2.12);
-  ts.lineTo(-0.42, 1.18);
-  var tongM = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(ts, {depth:1.14, bevelEnabled:true, bevelThickness:0.032, bevelSize:0.032, bevelSegments:3}),
-    mPad
-  );
-  tongM.position.set(0,0,-0.57); tongM.castShadow=true; shoe.add(tongM);
-  // Jordan / Wings branding rectangle on tongue
-  add(new THREE.BoxGeometry(0.32, 0.22, 0.014), mSilver,  0, 1.75,  0.58);
-  add(new THREE.BoxGeometry(0.20, 0.12, 0.014), mLeather, 0, 1.75,  0.59); // dark inner
-
-  /* ═══════════════════════════════════════════════════════
-     8. LACES — black with silver eyelets
-  ═══════════════════════════════════════════════════════ */
-  var laceData = [
-    [0.88,1.21], [0.65,1.23], [0.42,1.25],
-    [0.19,1.27], [-0.04,1.29], [-0.27,1.31], [-0.42,1.33]
-  ];
-  laceData.forEach(function(lp){
-    var lm = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.028,0.84,8), mLace);
-    lm.rotation.z=Math.PI/2; lm.position.set(lp[0],lp[1],0); shoe.add(lm);
-    [-0.42,0.42].forEach(function(ez){
-      var em = new THREE.Mesh(new THREE.TorusGeometry(0.048,0.015,8,12), mEyelet);
-      em.rotation.x=Math.PI/2; em.position.set(lp[0],lp[1],ez); shoe.add(em);
-    });
-  });
-
-  /* ═══════════════════════════════════════════════════════
-     9. ANKLE COLLAR — thick padded ring (high J12 collar)
-  ═══════════════════════════════════════════════════════ */
-  var collar = new THREE.Mesh(
-    new THREE.TorusGeometry(0.36, 0.10, 10, 30, Math.PI*1.22),
-    mPad
-  );
-  collar.position.set(-0.68, 1.82, 0);
-  collar.rotation.y = -0.36; collar.rotation.z = -1.20;
-  shoe.add(collar);
-
-  /* ═══════════════════════════════════════════════════════
-     10. WINGS LOGO BADGE — silver on lateral/medial sides
-  ═══════════════════════════════════════════════════════ */
-  add(new THREE.BoxGeometry(0.52, 0.13, 0.014), mSilvDk,  1.00, 0.96,  0.76);  // lateral
-  add(new THREE.BoxGeometry(0.52, 0.13, 0.014), mSilvDk,  1.00, 0.96, -0.77);  // medial
-  // Jumpman silhouette approximation (small triangular accent)
-  add(new THREE.BoxGeometry(0.14, 0.22, 0.014), mSilver, -1.70, 1.50,  0.76);
-  add(new THREE.BoxGeometry(0.14, 0.22, 0.014), mSilver, -1.70, 1.50, -0.77);
-
-  /* ── position + initial rotation ── */
-  shoe.position.set(0, -0.10, 0);
-  shoe.rotation.y = 0.15;
-
-  /* ── DRAG TO ROTATE ── */
-  var dragging=false, prevX=0, rotY=0.15, autoSpin=true;
-  canvas.addEventListener('mousedown',  function(e){ dragging=true;  prevX=e.clientX; autoSpin=false; });
-  window.addEventListener('mouseup',    function() { dragging=false; setTimeout(function(){ autoSpin=true; },2500); });
-  window.addEventListener('mousemove',  function(e){ if(dragging){ rotY+=(e.clientX-prevX)*0.012; prevX=e.clientX; }});
-  canvas.addEventListener('touchstart', function(e){ dragging=true;  prevX=e.touches[0].clientX; autoSpin=false; },{passive:true});
-  window.addEventListener('touchend',   function() { dragging=false; setTimeout(function(){ autoSpin=true; },2500); });
-  window.addEventListener('touchmove',  function(e){ if(dragging){ rotY+=(e.touches[0].clientX-prevX)*0.012; prevX=e.touches[0].clientX; }},{passive:true});
-
-  /* ── ANIMATE ── */
-  var clk=0;
-  function animate() {
-    requestAnimationFrame(animate);
-    clk += 0.007;
-    if (autoSpin) rotY += 0.006;
-    shoe.rotation.y    = rotY;
-    shoe.position.y    = -0.10 + Math.sin(clk*0.72)*0.048;
-    ring.material.opacity = 0.08 + Math.sin(clk*0.72)*0.04;
-    renderer.render(scene, camera);
-  }
-  animate();
-
-});
-</script>
+<!-- Sketchfab embed — no Three.js needed -->
 </body>
 </html>
