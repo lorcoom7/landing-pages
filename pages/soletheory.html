@@ -836,6 +836,46 @@
     margin-top: 16px; font-size: 8px; letter-spacing: 3px;
     text-transform: uppercase; color: rgba(255,255,255,0.18);
   }
+  /* ── SHOE TAG LABEL ── */
+  #shoe-tag {
+    display: inline-block; margin: 20px auto 0;
+    background: #f5f0e8; color: #111;
+    border-radius: 3px; padding: 14px 18px;
+    font-family: Arial, sans-serif;
+    text-align: left; width: 220px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+  }
+  #shoe-tag .tag-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 6px;
+  }
+  #shoe-tag .tag-us {
+    font-size: 11px; font-weight: bold; line-height: 1.1;
+    color: #222; letter-spacing: 0;
+  }
+  #shoe-tag .tag-us .us-num {
+    font-size: 28px; font-weight: 900; display: block;
+    line-height: 1; color: #111;
+  }
+  #shoe-tag .tag-jumpman {
+    font-size: 22px; line-height: 1; opacity: 0.9;
+  }
+  #shoe-tag .tag-right {
+    text-align: right; font-size: 9px; color: #444;
+    line-height: 1.5;
+  }
+  #shoe-tag .tag-row {
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: #333; border-top: 1px solid #ccc;
+    padding-top: 5px; margin-top: 5px; line-height: 1.8;
+  }
+  #shoe-tag .tag-row span { display: block; }
+  #shoe-tag .tag-meta {
+    margin-top: 6px; border-top: 1px solid #ccc; padding-top: 5px;
+    font-size: 7.5px; color: #555; line-height: 1.7; letter-spacing: 0;
+  }
+  #shoe-tag .tag-upc { font-size: 7px; color: #777; margin-top: 2px; }
   @media (max-width: 640px) {
     #sketchfab-wrap { height: 320px; }
     #shoe-price { font-size: 28px; }
@@ -910,7 +950,49 @@
       <span class="size-chip active">13</span>
     </div>
     <p id="insole-note">&#10003; Insole included &nbsp;&middot;&nbsp; Size <span>US 13</span></p>
-    <a href="#" id="shoe-cta">Shop Now &#x2192;</a>
+
+    <!-- Shoe tongue label -->
+    <div id="shoe-tag">
+      <div class="tag-top">
+        <div class="tag-us">
+          US
+          <span class="tag-us-num">13</span>
+        </div>
+        <!-- Jumpman silhouette SVG -->
+        <div class="tag-jumpman">
+          <svg width="28" height="32" viewBox="0 0 100 120" fill="#111" xmlns="http://www.w3.org/2000/svg">
+            <!-- simplified jumpman path -->
+            <ellipse cx="62" cy="12" rx="10" ry="10"/>
+            <path d="M55 22 Q40 30 30 50 Q20 65 10 75 Q20 78 28 72 Q35 60 45 52 L50 70 Q42 85 38 100 L50 102 Q56 88 62 72 L75 88 Q80 80 78 72 L65 55 L70 38 Q80 48 88 42 Q82 30 70 25 Z"/>
+            <path d="M28 72 Q15 80 5 90 Q12 95 22 88 Q30 80 38 70 Z"/>
+          </svg>
+        </div>
+        <div class="tag-right">
+          LNM<br>
+          DH6927-161
+        </div>
+      </div>
+      <div class="tag-row">
+        <div>
+          <span>UK 12</span>
+          <span>DH6927-161</span>
+        </div>
+        <div style="text-align:right">
+          <span>EUR 47.5</span>
+          <span>SM 31</span>
+        </div>
+      </div>
+      <div class="tag-row">
+        <div><span>BR 45</span></div>
+        <div style="text-align:right"><span>CN 305</span></div>
+      </div>
+      <div class="tag-meta">
+        04/04/23 &nbsp;|&nbsp; 09/27/23<br>
+        <span class="tag-upc">UPC 00196608223450</span>
+      </div>
+    </div>
+
+    <a href="#" id="shoe-cta" style="margin-top:20px">Shop Now &#x2192;</a>
     <p id="showcase-hint">Drag &amp; scroll to explore · Powered by Sketchfab</p>
   </div>
 </section>
