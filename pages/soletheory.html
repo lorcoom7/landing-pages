@@ -780,6 +780,67 @@
     pointer-events: none;
     z-index: 10;
   }
+  /* ── TONGUE TAG OVERLAY ── */
+  #tongue-tag {
+    position: absolute;
+    /* tongue sits upper-left of shoe silhouette */
+    top: 22%; left: 30%;
+    z-index: 20;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  #tongue-badge {
+    background: #f2ede0;
+    border: 1px solid #c8c0ae;
+    border-radius: 3px;
+    padding: 7px 10px 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.5);
+    min-width: 90px;
+    /* subtle tilt like a real tongue tag */
+    transform: rotate(-2deg);
+  }
+  #tongue-badge .tb-top {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 8px;
+    border-bottom: 1px solid #c8c0ae;
+    padding-bottom: 4px; margin-bottom: 4px;
+  }
+  #tongue-badge .tb-us {
+    font-size: 9px; color: #555; font-weight: bold;
+    line-height: 1; text-transform: uppercase; letter-spacing: 1px;
+  }
+  #tongue-badge .tb-num {
+    font-size: 22px; font-weight: 900; color: #111;
+    line-height: 1; display: block;
+  }
+  #tongue-badge .tb-jump {
+    opacity: 0.8;
+  }
+  #tongue-badge .tb-rows {
+    font-size: 7.5px; color: #555; line-height: 1.7;
+    font-family: Arial, sans-serif;
+  }
+  #tongue-badge .tb-rows span {
+    display: flex; justify-content: space-between; gap: 10px;
+  }
+  /* connector dot that "pins" the tag to the shoe */
+  #tongue-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-left: 14px;
+    margin-top: 3px;
+    box-shadow: 0 0 0 2px rgba(0,255,255,0.25), 0 0 8px rgba(0,255,255,0.5);
+    animation: tongue-pulse 2s ease-in-out infinite;
+  }
+  @keyframes tongue-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(0,255,255,0.25), 0 0 8px rgba(0,255,255,0.5); }
+    50%       { box-shadow: 0 0 0 5px rgba(0,255,255,0.1), 0 0 16px rgba(0,255,255,0.4); }
+  }
   #shoe-canvas {
     display: block;
     width: 100%; height: 100%;
@@ -998,6 +1059,32 @@
     allow="autoplay; fullscreen; xr-spatial-tracking"
     src="https://sketchfab.com/models/142ad15c39ad49bcb7bc7353349bd26a/embed?autostart=1&preload=1&autospin=0.3&ui_infos=0&ui_controls=0&ui_stop=0&transparent=1&camera=0&dnt=1">
   </iframe>
+
+  <!-- Size tag overlaid on the shoe tongue -->
+  <div id="tongue-tag">
+    <div id="tongue-badge">
+      <div class="tb-top">
+        <div>
+          <span class="tb-us">US</span>
+          <span class="tb-num">13</span>
+        </div>
+        <div class="tb-jump">
+          <svg width="22" height="26" viewBox="0 0 100 120" fill="#111" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="62" cy="12" rx="10" ry="10"/>
+            <path d="M55 22 Q40 30 30 50 Q20 65 10 75 Q20 78 28 72 Q35 60 45 52 L50 70 Q42 85 38 100 L50 102 Q56 88 62 72 L75 88 Q80 80 78 72 L65 55 L70 38 Q80 48 88 42 Q82 30 70 25 Z"/>
+            <path d="M28 72 Q15 80 5 90 Q12 95 22 88 Q30 80 38 70 Z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="tb-rows">
+        <span><b>EUR</b> 47.5</span>
+        <span><b>UK</b> 12</span>
+        <span><b>CM</b> 31</span>
+      </div>
+    </div>
+    <div id="tongue-dot"></div>
+  </div>
+
 </div>
   <div id="showcase-info">
     <h2 id="shoe-name">Jordan 12 Retro Barons</h2>
